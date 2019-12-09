@@ -1,5 +1,3 @@
-# Day 6: https://adventofcode.com/2019/day/6
-
 class Tree:
     def __init__(self, name):
         self.root = None
