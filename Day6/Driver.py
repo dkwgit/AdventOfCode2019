@@ -12,9 +12,7 @@ class Driver:
         self.roots = []
     
     def Construct(self):
-        #i = 0
         for line in self.inputData:
-            #print(f"line {i}")
             rootName, branchName = line.split(')')
             if branchName not in self.trees.keys():
                 self.trees[branchName] = Tree.Tree(branchName)
@@ -23,7 +21,6 @@ class Driver:
                 self.trees[rootName] = Tree.Tree(rootName)
             rootTree = self.trees[rootName]
             rootTree.insertBranch(branchTree)
-            #i = i + 1
 
         self.roots = self.FindRoots()
         assert(len(self.roots)==1)
@@ -41,6 +38,7 @@ testDriver = Driver(testDataSource)
 testRoot = testDriver.Construct()
 orbits = testRoot.CountOrbits(0, 0)
 print(f"Number of orbits in test data set {orbits}")
+assert(42 == orbits)
 
 dataSource = Source(Fixture.mainData)
 driver = Driver(dataSource)
