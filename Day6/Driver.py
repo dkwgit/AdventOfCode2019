@@ -61,8 +61,8 @@ assert(len(pathToSAN) == len(set(pathToSAN))) #test that path has integrity
 pathToYOU = root.GetPathToBranch('YOU',[])
 assert(len(pathToYOU) == len(set(pathToYOU))) #test that path has integrity
 lastCommonIndex = driver.FindLastCommonIndex(pathToSAN, pathToYOU)
-indexBeforeSAN = len(pathToSAN) - 2
-indexBeforeYOU = len(pathToYOU) - 2
+indexBeforeSAN = len(pathToSAN) - 2 #Don't count SAN in orbital transfers
+indexBeforeYOU = len(pathToYOU) - 2 #Don't count YOU in orbital transfers
 # number of hops from leaf A to common point + number of hops from common point to leaf B - 1 for the point in common
 orbitalTransfers = indexBeforeSAN - lastCommonIndex + indexBeforeYOU - lastCommonIndex
 print(f"Day 6-2. orbital transfers to get to Santa: {orbitalTransfers}")
