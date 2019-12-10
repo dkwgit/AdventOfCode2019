@@ -62,7 +62,17 @@ class Tree:
                 current = current - 1
             return sum
 
-            
-
-
-            
+    def GetPathToBranch(self, name, path):
+        path.append(self.name)
+        
+        if (self.name == name):
+            return path
+        
+        if (self.isLeaf != True):
+            for branchName in self.branches.keys():
+                path = self.branches[branchName].GetPathToBranch(name,path)
+                if (path[-1] != name):
+                    path.pop()
+            return path
+        else:
+            return path
