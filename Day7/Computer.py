@@ -27,6 +27,7 @@ class Computer:
         self._programData = programData.copy()
         self._programIndex = programStart
         self._programLine = 0
+        self._output = None
         
     def ReadLocation(self, location):
         return self._programData[location]
@@ -40,7 +41,7 @@ class Computer:
     def WriteLocation(self, location, value):
         self._programData[location] = value
 
-    def Run(self,testMode = False, testData = None):
+    def Run(self, testMode = False, testData = None):
         go = True
         while(True == go):
             value = self.ReadLocation(self._programIndex)
@@ -59,10 +60,10 @@ class Computer:
 
             if (isinstance(opCode, Halt)):
                 go = False
-                
-            val = opCode.RunOpCode()
+
+            self._output  = opCode.RunOpCode()
 
             if (testMode == True and value == 4): 
-                assert(val == testData[1])
+                assert(self._output== testData[1])
 
             self._programLine = self._programLine + 1
