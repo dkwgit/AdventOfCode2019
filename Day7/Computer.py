@@ -23,7 +23,7 @@ class Computer:
             99: lambda computer, programlocation :   Halt(computer,programlocation)
         }
 
-    def __init__(self, programData, unattended = False, unattendedInputs = None, testMode = False, testData = None, programStart=0):
+    def __init__(self, programData, unattended = False, unattendedInputs = None, programStart=0):
         self._programData = programData.copy()
         self._programIndex = programStart
         self._programLine = 0
@@ -31,8 +31,6 @@ class Computer:
         self._unattendedInputs = unattendedInputs
         self._currentUnattendedInput = 0
         self._outputs = []
-        self._testMode = testMode
-        self._testData = testData
 
     def GetUnattendedInput(self):
         assert(self._unattended == True)
@@ -73,7 +71,6 @@ class Computer:
 
             if (isinstance(opCodeInstance, Output)): 
                 self._outputs.append(opCodeReturnValue)
-                if (self._testMode == True):
-                    assert(self._outputs[-1] == self._testData[len(self._outputs) - 1][1])
 
             self._programLine = self._programLine + 1
+        return self._outputs[-1]

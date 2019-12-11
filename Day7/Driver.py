@@ -20,9 +20,12 @@ class Driver:
             testIO = testTuple[2]
             print(f"\t{testDescription}")
             for idx, testItem in enumerate(testIO):
+                value, output = testItem
                 print(f"\t\tRunning subtest {idx + 1}")
-                c = Computer(testData, True, [testItem[0]], True, [testItem])
-                c.Run()
+                c = Computer(testData, True, [value])
+                result = c.Run()
+                print(f"\t\t\tTest produce {result} with expected {output}")
+                assert(result == output)
 
         self.RunAmplifierTests()
 
@@ -33,24 +36,20 @@ class Driver:
             DataFixture.testData3Day7
             ]
         for index, test in enumerate(testInputs):
+            print(f"Running amplifier test {index + 1}")
             program, settings, output = test
             result = self.RunAmplifierSetup(program,settings)
+            print(f"\tsettings {settings} produced result {result}, with expected output {output}")
             assert(result == output)
 
     def RunAmplifierSetup(self, programData, settings):
-        nextInput = -1
+        nextInput = 0
         output = None
         assert(len(settings)==5)
         for index,setting in enumerate(settings):
-            if (index == 0):
-                c = Computer(programData, True, [setting,0])
-                c.Run()
-                nextInput = c._outputs[-1]
-            else:
-                c = Computer(programData, True, [setting,nextInput])
-                c.Run()
-                if (index == 4):
-                    output = c._outputs[-1]
+            c = Computer(programData, True, [setting, nextInput])
+            nextInput = c.Run()
+        output = nextInput
         return output
 
     def FindMaxOutput(self, programData):
@@ -62,6 +61,9 @@ class Driver:
 
 d = Driver()
 d.DoTests()
+maxOutput = d.FindMaxOutput(DataFixture.mainDataDay7)
+print(f"Max possible output is {maxOutput}")
+
         
 
 
