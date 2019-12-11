@@ -7,7 +7,8 @@ class Output(Operation):
 
     def Execute(self):
         value = self._parameters[0].GetValue()
-        print(f"Value: {value}")
+        if (self._computer._unattended != True):
+            print(f"Output instruction value: {value}")
         return value
 
     def SetWidth(self):

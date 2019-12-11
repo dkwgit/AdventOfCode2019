@@ -3,7 +3,7 @@ from DataFixture import DataFixture as DataFixture
 
 
 #do tests
-if (False==True):
+if (True==True):
     testInputs = [
         DataFixture.test1,
         DataFixture.test2,
@@ -19,9 +19,9 @@ if (False==True):
         testDescription = testTuple[1]
         testIO = testTuple[2]
         print(f"\t{testDescription}")
-        for index, testItem in enumerate(testIO):
-            print(f"\t\tRunning subtest {index + 1}")
-            c = Computer(testData)
-            c.Run(True, testItem)
+        for idx, testItem in enumerate(testIO):
+            print(f"\t\tRunning subtest {idx + 1}")
+            c = Computer(testData, True, [testItem[0]], True, [testItem])
+            c.Run()
 
 

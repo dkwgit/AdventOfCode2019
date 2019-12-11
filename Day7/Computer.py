@@ -12,22 +12,37 @@ import sys
 class Computer:
 
     opCodeTable = {
-            1 : lambda computer, programlocation :  Addition(computer,programlocation),
-            2 : lambda computer, programlocation :  Multiplication(computer,programlocation),
-            3 : lambda computer, programlocation,testInput=None :  Input(computer,programlocation,testInput),
-            4 : lambda computer, programlocation :  Output(computer,programlocation),
-            5 : lambda computer, programlocation :  JumpIfTrue(computer,programlocation),
-            6 : lambda computer, programlocation :  JumpIfFalse(computer,programlocation),
-            7 : lambda computer, programlocation :  LessThan(computer,programlocation),
-            8 : lambda computer, programlocation :  Equals(computer,programlocation),
-            99: lambda computer, programlocation :  Halt(computer,programlocation)
+            1 : lambda computer, programlocation :   Addition(computer,programlocation),
+            2 : lambda computer, programlocation :   Multiplication(computer,programlocation),
+            3 : lambda computer, programlocation :   Input(computer,programlocation),
+            4 : lambda computer, programlocation :   Output(computer,programlocation),
+            5 : lambda computer, programlocation :   JumpIfTrue(computer,programlocation),
+            6 : lambda computer, programlocation :   JumpIfFalse(computer,programlocation),
+            7 : lambda computer, programlocation :   LessThan(computer,programlocation),
+            8 : lambda computer, programlocation :   Equals(computer,programlocation),
+            99: lambda computer, programlocation :   Halt(computer,programlocation)
         }
 
-    def __init__(self, programData, programStart=0):
+    def __init__(self, programData, unattended = False, unattendedInputs = None, testMode = False, testData = None, programStart=0):
         self._programData = programData.copy()
         self._programIndex = programStart
         self._programLine = 0
-        self._output = None
+        self._unattended = unattended
+        self._unattendedInputs = unattendedInputs
+        self._currentUnattendedInput = 0
+        self._outputs = []
+        self._testMode = testMode
+        self._testData = testData
+
+    def GetUnattendedInput(self):
+        assert(self._unattended == True)
+        if (self._unattended == True):
+            assert(self._currentUnattendedInput < len(self._unattendedInputs))
+            val = self._unattendedInputs[self._currentUnattendedInput]
+            self._currentUnattendedInput = self._currentUnattendedInput + 1
+            return val
+        else:
+            return None
         
     def ReadLocation(self, location):
         return self._programData[location]
@@ -41,29 +56,24 @@ class Computer:
     def WriteLocation(self, location, value):
         self._programData[location] = value
 
-    def Run(self, testMode = False, testData = None):
+    def Run(self):
         go = True
         while(True == go):
-            value = self.ReadLocation(self._programIndex)
-            valueAsString = str(value)
+            opCodeValue = self.ReadLocation(self._programIndex)
+            valueAsString = str(opCodeValue)
             if (len(valueAsString)>2):
-                value = int(valueAsString[-2:])
-            opCodeConstructor = self.opCodeTable[value]
+                opCodeValue = int(valueAsString[-2:])
+            opCodeConstructor = self.opCodeTable[opCodeValue]
+            opCodeInstance = opCodeConstructor(self,self._programIndex)
 
-            if (testMode == False): 
-                opCode = opCodeConstructor(self,self._programIndex)
-            else:
-                if (value == 3):
-                    opCode = opCodeConstructor(self,self._programIndex, testData[0])
-                else:
-                    opCode = opCodeConstructor(self,self._programIndex)
-
-            if (isinstance(opCode, Halt)):
+            if (isinstance(opCodeInstance, Halt)):
                 go = False
 
-            self._output  = opCode.RunOpCode()
+            opCodeReturnValue = opCodeInstance.RunOpCode()
 
-            if (testMode == True and value == 4): 
-                assert(self._output== testData[1])
+            if (isinstance(opCodeInstance, Output)): 
+                self._outputs.append(opCodeReturnValue)
+                if (self._testMode == True):
+                    assert(self._outputs[-1] == self._testData[len(self._outputs) - 1][1])
 
             self._programLine = self._programLine + 1
