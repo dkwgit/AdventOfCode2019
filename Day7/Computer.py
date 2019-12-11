@@ -23,7 +23,7 @@ class Computer:
             99: lambda computer, programlocation :   Halt(computer,programlocation)
         }
 
-    def __init__(self, programData, unattended = False, unattendedInputs = None, programStart=0):
+    def __init__(self, programData, unattended = False, unattendedInputs = None, inputOutputEvents = None, programStart=0):
         self._programData = programData.copy()
         self._programIndex = programStart
         self._programLine = 0
@@ -31,10 +31,46 @@ class Computer:
         self._unattendedInputs = unattendedInputs
         self._currentUnattendedInput = 0
         self._outputs = []
+        self._state = -1
+        if (inputOutputEvents is not None):
+            self._inputEvent = inputOutputEvents[0]
+            self._outputEvent = inputOutputEvents[1]
+        else:
+            self._inputEvent = None
+            self._outputEvent = None
+
+
+    def AddInput(self, inputValue):
+        assert(self._unattended == True)
+        self._unattendedInputs.append(inputValue)
+        if (self._inputEvent is not None):
+            self._inputEvent.set()
+
+    def GetState(self):
+        return self._state
+
+    def GetAllOutputs(self):
+        return self._outputs
+
+    def GetLastOutput(self):
+        assert(self.GetState() == 0)
+        return self._outputs[-1]
+
+    def GetHighestOutput(self):
+        if (self._outputEvent is not None):
+            self._outputEvent.wait()
+            self._outputEvent.clear()
+        return self._outputs[-1]
+    
+    def SetOutput(self, value):
+        self._outputs.append(value)
 
     def GetUnattendedInput(self):
         assert(self._unattended == True)
         if (self._unattended == True):
+            if (self._currentUnattendedInput == len(self._unattendedInputs) and self._inputEvent != None):
+                self._inputEvent.wait()
+                self._inputEvent.clear()
             assert(self._currentUnattendedInput < len(self._unattendedInputs))
             val = self._unattendedInputs[self._currentUnattendedInput]
             self._currentUnattendedInput = self._currentUnattendedInput + 1
@@ -55,6 +91,7 @@ class Computer:
         self._programData[location] = value
 
     def Run(self):
+        self._state = 1
         go = True
         while(True == go):
             opCodeValue = self.ReadLocation(self._programIndex)
@@ -71,6 +108,9 @@ class Computer:
 
             if (isinstance(opCodeInstance, Output)): 
                 self._outputs.append(opCodeReturnValue)
+                if (self._outputEvent is not None):
+                    self._outputEvent.set()
 
             self._programLine = self._programLine + 1
+        self._state = 0
         return self._outputs[-1]
