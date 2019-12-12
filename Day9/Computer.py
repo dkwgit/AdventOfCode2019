@@ -20,6 +20,7 @@ class Computer:
             6 : lambda computer, programlocation :   JumpIfFalse(computer,programlocation, 2, False, False),
             7 : lambda computer, programlocation :   LessThan(computer,programlocation, 3, True, True),
             8 : lambda computer, programlocation :   Equals(computer,programlocation, 3, True, True),
+            9 : lambda computer, programlocation :   AdjustRelativeBase(computer,programlocation, 1, False, True),
             99: lambda computer, programlocation :   Halt(computer,programlocation, 1, False, False)
         }
 
