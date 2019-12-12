@@ -1,6 +1,6 @@
 from Computer import Computer as Computer
 from DataFixture import DataFixture as DataFixture
-from itertools import permutations 
+from itertools import permutations
 import threading
 
 def threadStartFunc(computer, name):
