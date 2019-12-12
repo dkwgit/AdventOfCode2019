@@ -115,9 +115,9 @@ class Driver:
 d = Driver()
 d.DoTests()
 maxOutput = d.FindMaxOutput(DataFixture.mainDataDay7)
-print(f"Max possible output is {maxOutput}")
+print(f"Max possible output is {maxOutput}") #437860
 maxFeedbackOutput = d.FindMaxOutputWithFeedback(DataFixture.mainDataDay7)
-print(f"Max possible output with feedback is {maxFeedbackOutput}")
+print(f"Max possible output with feedback is {maxFeedbackOutput}") #49810599
 
         
 

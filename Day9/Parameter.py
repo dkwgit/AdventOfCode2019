@@ -15,12 +15,19 @@ class Parameter:
 
     def GetValue(self):
 
-        if (ParameterTypeEnum(self._type) == ParameterTypeEnum.IMMEDIATE or self._writeLocationParameter == True):
+        if (ParameterTypeEnum(self._type) == ParameterTypeEnum.IMMEDIATE):
             return self._computer.ReadLocation(self._location)
         if (ParameterTypeEnum(self._type) == ParameterTypeEnum.POSITIONAL):
-            return self._computer.ReadLocation(self._computer.ReadLocation(self._location))
+            address = self._computer.ReadLocation(self._location)
+            if (self._writeLocationParameter == True):
+                return address
+            else:
+                return self._computer.ReadLocation(address)
         if (ParameterTypeEnum(self._type) == ParameterTypeEnum.RELATIVE):
-            location = self._computer.ReadLocation(self._location) + self._computer.GetRelativeBase()
-            return self._computer.ReadLocation(location)
+            address = self._computer.ReadLocation(self._location) + self._computer.GetRelativeBase()
+            if (self._writeLocationParameter == True):
+                return address
+            else:
+                return self._computer.ReadLocation(address)
 
         
