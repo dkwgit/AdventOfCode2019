@@ -119,11 +119,18 @@ class Driver:
         allResults.sort()
         return allResults[-1]
 
+    def RunDay9(self):
+        c1 = Computer(DataFixture.mainDay9,True,[1])
+        val1 = c1.Run()
+        print(f"Run of Day 9-1 with input 1 produces {val1}") #3533056970
+        c2 = Computer(DataFixture.mainDay9,True,[2])
+        val2 = c2.Run()
+        print(f"Run of Day 9-2 with input 2 produces {val2}") #72852
+
+
 d = Driver()
 d.DoTests()
-c = Computer(DataFixture.mainDay9)
-val = c.Run()
-print(f"Run of Day9 data produces {val}")
+d.RunDay9()
 
         
 
