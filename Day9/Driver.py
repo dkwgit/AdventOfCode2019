@@ -16,6 +16,9 @@ class Driver:
             DataFixture.test5,
             DataFixture.test6,
             DataFixture.test7,
+            DataFixture.testData2Day9,
+            DataFixture.testData3Day9,
+            DataFixture.testData1Day9,
         ]
         for index,testTuple in enumerate(testInputs):
             print(f"Running test {index + 1}") 
@@ -26,10 +29,14 @@ class Driver:
             for idx, inputOutputTuple in enumerate(testIO):
                 value, output = inputOutputTuple
                 print(f"\t\tRunning subtest {idx + 1}")
-                c = Computer(testData, True, [value])
+                c = Computer(testData, True, None if value is None else [value])
                 result = c.Run()
-                print(f"\t\t\tTest produced {result} with expected {output}")
-                assert(result == output)
+                if (not isinstance(output, list)):
+                    print(f"\t\t\tTest produced {result} with expected {output}")
+                    assert(result == output)
+                else:
+                    print(f"\t\t\tTest produced {c._outputs} with expected {output}")
+                    assert(c._outputs == output)
 
         self.RunAmplifierTests()
         self.RunAmplifierFeedbackTests()

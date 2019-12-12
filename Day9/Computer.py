@@ -7,6 +7,7 @@ from JumpIfFalse import JumpIfFalse as JumpIfFalse
 from LessThan import LessThan as LessThan
 from Equals import Equals as Equals
 from Halt import Halt as Halt
+from AdjustRelativeBase import AdjustRelativeBase as AdjustRelativeBase
 import sys
 
 class Computer:
@@ -26,6 +27,10 @@ class Computer:
 
     def __init__(self, programData, unattended = False, unattendedInputs = None, inputOutputEvents = None, programStart=0):
         self._programData = programData.copy()
+        moreMemory = []
+        for idx in range(0,1024):
+            moreMemory.append(0)
+        self._programData.extend(moreMemory)
         self._programIndex = programStart
         self._programLine = 0
         self._unattended = unattended
@@ -46,8 +51,6 @@ class Computer:
 
     def AdjustRelativeBase(self, val):
         self._relativeBase = self._relativeBase + val
-
-
 
     def AddInput(self, inputValue):
         assert(self._unattended == True)
@@ -75,6 +78,8 @@ class Computer:
         self._outputs.append(value)
 
     def GetUnattendedInput(self):
+        if (self._unattendedInputs is None):
+            return None
         assert(self._unattended == True)
         if (self._unattended == True):
             if (self._currentUnattendedInput == len(self._unattendedInputs) and self._inputEvent != None):
