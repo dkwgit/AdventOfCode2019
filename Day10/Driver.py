@@ -135,13 +135,13 @@ class Driver:
         output = []
         anglesBySortKey = {}
         for k in otherAsteroids.keys():
-            sortKey = otherAsteroids[k][5]
+            sortKey = otherAsteroids[k][0][5]
             if (sortKey not in anglesBySortKey.keys()):
                 anglesBySortKey[sortKey] = []
-            anglesBySortKey[sortKey].append(otherAsteroids[k])
-        for clockWiseStep in range(1,9).sort(reverse=True):
-            angleList = map(lambda x: (x,clockWiseStep),list(set(anglesBySortKey[clockWiseStep])).sort(reverse=True))
-            output.expand(angleList)
+            anglesBySortKey[sortKey].append(k)
+        for clockWiseStep in sorted(anglesBySortKey.keys(),reverse=True):
+            angleList = sorted(map(lambda x: (x,clockWiseStep),list(set(anglesBySortKey[clockWiseStep]))),reverse=True)
+            output.extend(angleList)
         return output
 
     def ZapAsteroids(self, otherAsteroids):
