@@ -1,8 +1,18 @@
 from DataFixture import DataFixture as DataFixture
 import math
+from decimal import *
+
 
 #https://adventofcode.com/2019/day/10
 class Driver:
+
+    getcontext().prec = 5
+    pi = Decimal.from_float(math.pi)*Decimal(1)
+    piHalf = Decimal.from_float(math.pi/2)*Decimal(1)
+    piQuarter = Decimal.from_float(math.pi/4)*Decimal(1)
+    negPi = Decimal.from_float(-math.pi)*Decimal(1)
+    negPiHalf = Decimal.from_float(-math.pi/2)*Decimal(1)
+    negPiQuarter = Decimal.from_float(-math.pi/4)*Decimal(1)
 
     def DoTests(self):
         tests = [
@@ -39,19 +49,74 @@ class Driver:
         result = (numberOfAsteroidsInSight,candidate,otherDict) = candidates[0][0],candidates[0][1],candidates[0][2]
         return result
 
+    def TestSortKeys(self):
+        data = [
+            ((0,-1), Driver.negPiHalf,                  8),
+            ((1,-1), Driver.negPiQuarter,               7),
+            ((1,0),  Decimal(0),                        6),
+            ((1,1),  Driver.piQuarter,                  5),
+            ((0,1),  Driver.piHalf,                     4),
+            ((-1,1), Decimal(3)*Driver.piQuarter,       3),
+            ((-1,0), Driver.pi,                         2),
+            ((-1,-1),Decimal(3)*Driver.negPiQuarter,    1)
+        ]
+        for direction, angle, sortKey in data:
+            assert(angle == Decimal.from_float(math.atan2(direction[1],direction[0]))*Decimal(1))
+            result = self.GetSortKeyForClockwise(angle,direction)
+            assert(result == sortKey)
+        
+    def GetSortKeyForClockwise(self,angle,direction):
+        # Have to deal with non cartesian coords (upper left!), yet atan2(), which we are using for angles
+        # works with cartesian. Also have to get the sorting of angles to give us a clockwise sort
+        #
+        # following shows directions in puzzle order and shows how those map to cartesian atan2
+        #
+        # direction 0,-1 (up,q1) => q3 in atan2 [-pi/2, -pi)
+        # direction 1,-1 (up,right,q1) => q2 in atan2 [0, -pi/2)])
+        # direction 1,0 (right, q2) => q2 in atan2 [0, -pi/2)
+        # direction 1,1 (right,down,q2) => q1 in atan2 [pi/2, 0)
+        # direction 0,1 (down,q3) => q1 in atan2 [pi/2, 0)
+        # direction -1,1 (left,down,q3) => q4 in atan2 [pi, pi/2)
+        # direction -1,0 (left,q4) => q4 in atan2 [pi, pi/2)
+        # direction -1,-1 (left,up,q4) => q3 in atan2 [-pi/2, -pi)
+        if (Driver.negPiHalf == angle):  # direction 0,-1
+            sortKey = 8
+        elif (0 > angle > Driver.negPiHalf): # direction 1,-1
+            sortKey = 7
+        elif (0 == angle): # direction 1,0
+            sortKey = 6
+        elif (Driver.piHalf > angle > 0): # direction 1,1
+            sortKey = 5
+        elif (Driver.piHalf == angle): # direction 0,1
+            sortKey = 4
+        elif (Driver.pi > angle > Driver.piHalf): #direction -1,1
+            sortKey = 3
+        elif (Driver.pi == angle): #direction -1,0
+            sortKey = 2
+        elif (Driver.negPiHalf > angle > Driver.negPi):
+            sortKey = 1
+        return sortKey
+
     def CalculatePointInfo(self, point1, point2):
         x1,y1 = point1
         x2,y2 = point2
-        vector = (x2 - x1, y2 - y1)
-        angle = math.atan2(vector[1],vector[0])
-        angle = round(angle,5)
         direction = (1 if x2 - x1 > 0 else -1 if x2 - x1 < 0 else 0, 1 if y2 - y1 > 0 else -1 if y2 - y1 < 0 else 0)
+
+        vector = (x2 - x1, y2 - y1)
+        #nonCartesianVector = vector
+        #vector = self.ConvertVectorToCartesian(vector)
+        #if (point1 == (29,28)):
+        #    print(f"Vector {nonCartesianVector} converted to {vector}")
+
+        angle = Decimal.from_float(math.atan2(vector[1],vector[0]))*Decimal(1)
+
         if (x1 != x2):
-            distance = math.sqrt(vector[0]**2 + vector[1]**2)
+            distance = Decimal.from_float(math.sqrt(vector[0]**2 + vector[1]**2))*Decimal(1)
         else:
-            distance = abs(vector[1])
-        distance = round(distance,5)
-        return (angle,distance,direction,vector,(point1,point2))
+            distance = Decimal(abs(vector[1]))
+       
+        sortKey = self.GetSortKeyForClockwise(angle,direction)
+        return (angle,distance,direction,vector,(point1,point2),sortKey)
 
     def ReadMap(self,mapData):
         x = 0
@@ -66,31 +131,26 @@ class Driver:
             y = y + 1
         return asteroids
 
-    def ZapAsteroids(self, otherAsteroids):
-        quad3 = lambda x: ((-1) * math.pi / 2) >= x > ((-1) * math.pi)
-        quad4 = lambda x: (math.pi) >= x > (math.pi / 2)
-        rightHemi = lambda x: (math.pi / 2) >= x > ((-1) * math.pi /  2)
+    def GetClockWiseListOfAngles(self,otherAsteroids):
+        output = []
+        anglesBySortKey = {}
+        for k in otherAsteroids.keys():
+            sortKey = otherAsteroids[k][5]
+            if (sortKey not in anglesBySortKey.keys()):
+                anglesBySortKey[sortKey] = []
+            anglesBySortKey[sortKey].append(otherAsteroids[k])
+        for clockWiseStep in range(1,9).sort(reverse=True):
+            angleList = map(lambda x: (x,clockWiseStep),list(set(anglesBySortKey[clockWiseStep])).sort(reverse=True))
+            output.expand(angleList)
+        return output
 
-        leftHemi = lambda x: not rightHemi(x)
+    def ZapAsteroids(self, otherAsteroids):
 
         zapCount = 0
         zappedAsteroidInfo = None
         while len(otherAsteroids) > 0:
-            firstHalfOfList = [i for i in otherAsteroids.keys() if rightHemi(float(i)) == True]
-            firstHalfOfList.sort(key = lambda x: float(x), reverse = True)
-            quad3List = [i for i in otherAsteroids.keys() if quad3(float(i)) == True]
-            quad4List = [i for i in otherAsteroids.keys() if quad4(float(i)) == True]
-            quad3List.sort(key = lambda x: float(x), reverse = True)
-            quad4List.sort(key = lambda x: float(x), reverse = True)
-            clockwiseList = []
-            clockwiseList.extend(firstHalfOfList)
-            clockwiseList.extend(quad3List)
-            clockwiseList.extend(quad4List)
-            assert(len(clockwiseList)==len(otherAsteroids))
-            assert(
-                (set(otherAsteroids.keys()) & set(clockwiseList))==set(otherAsteroids.keys())
-            )
-            for angle in clockwiseList:
+            clockwiseList = self.GetClockWiseListOfAngles(otherAsteroids)
+            for angle,clockWiseStep in clockwiseList:
                 lineOfAsteroids = otherAsteroids[angle]
                 zappedAsteroidInfo = lineOfAsteroids.pop(0)
                 if (len(lineOfAsteroids)<=0):
@@ -102,8 +162,10 @@ class Driver:
                     point = zappedAsteroidInfo[4][1]
                     print(f"200th asteroid zapped is {point}, with 100x+y = {100*point[0]+point[1]}")
 
+getcontext().prec = 5
 d = Driver()
 d.DoTests()
 numberOfAsteroidsInSight,candidate,otherDict = d.FindBestCandidate(DataFixture.mainData)
 print(f"Best asteroid found {candidate}, with {numberOfAsteroidsInSight} asteroids detected compared to expected.")
+d.TestSortKeys()
 d.ZapAsteroids(otherDict)
