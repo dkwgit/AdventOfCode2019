@@ -7,6 +7,4 @@ class Output(Operation):
 
     def Execute(self):
         value = self._parameters[0].GetValue()
-        if (self._computer._unattended != True):
-            print(f"Output instruction value: {value}")
-        return value
+        return self._computer.SetOutput(value)

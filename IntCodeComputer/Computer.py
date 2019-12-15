@@ -26,7 +26,7 @@ class Computer:
             99: lambda computer, programlocation :   Halt(computer,programlocation, 1, False, False)
         }
 
-    def RunProgram(self, programData):
+    def LoadProgram(self, programData):
         self._programData = programData.copy()
         moreMemory = []
         for idx in range(0,1024):
@@ -34,30 +34,15 @@ class Computer:
         self._programData.extend(moreMemory)
         self._programIndex = 0
         self._programLine = 0
-        if (self._thread):
-            self._thread.start()
-            print(f"Computer will run on thread: {self._thread.ident}")
-        else:
-            return self.Run()
-
-    def __init__(self,unattended = False, unattendedInputs = None):
+        return self
+ 
+    def __init__(self):
         self._programData = None
         self._programIndex = None
         self._programLine = None
-        self._unattended = unattended
-        self._unattendedInputs = unattendedInputs
-        if (self._unattended == True):
-            if (self._unattendedInputs is None):
-                self._unattendedInputs = []
-        self._currentUnattendedInput = 0
-        self._outputs = []
-        self._state = -1
         self._relativeBase = 0
-        self._thread = None
-        self._threadFunc = None
-        self._inputEvent = None
-        self._outputEvent = None
-        self._relativeBase = 0
+        self._input = None
+        self._output = None
 
     def GetRelativeBase(self):
         return self._relativeBase
@@ -65,45 +50,25 @@ class Computer:
     def AdjustRelativeBase(self, val):
         self._relativeBase = self._relativeBase + val
 
-    def AddInput(self, inputValue):
-        assert(self._unattended == True)
-        print(f"Adding input from thread: {threading.current_thread().ident}")
-        self._unattendedInputs.append(inputValue)
-        print(f"number of inputs is now: {len(self._currentUnattendedInput)}, number read is {self._currentUnattendedInput}")
-        if (self._inputEvent is not None):
-            self._inputEvent.set()
+    def SetInput(self, val):
+        self._input = val
 
-    def GetState(self):
-        return self._state
+    def GetOutput(self):
+        val = self._output
+        self._output = None
+        return val
 
-    def GetAllOutputs(self):
-        return self._outputs
-
-    def GetLastOutput(self):
-        assert(self.GetState() == 0)
-        return self._outputs[-1]
-
-    def GetHighestOutput(self):
-        if (self._outputEvent is not None):
-            self._outputEvent.wait()
-            self._outputEvent.clear()
-        return self._outputs[-1]
+    def GetInput(self):
+        assert(self._input != None)
+        val = self._input.pop(0)
+        if (len(self._input) == 0):
+            self._input = None
+        return val
     
-    def SetOutput(self, value):
-        self._outputs.append(value)
-
-    def GetUnattendedInput(self):
-        assert(self._unattended == True)
-        if (self._unattended == True):
-            if (self._currentUnattendedInput == len(self._unattendedInputs) and self._inputEvent != None):
-                self._inputEvent.wait()
-                self._inputEvent.clear()
-            assert(self._currentUnattendedInput < len(self._unattendedInputs))
-            val = self._unattendedInputs[self._currentUnattendedInput]
-            self._currentUnattendedInput = self._currentUnattendedInput + 1
-            return val
-        else:
-            return None
+    def SetOutput(self, val):
+        assert(self._output == None)
+        self._output = val
+        return self
         
     def ReadLocation(self, location):
         return self._programData[location]
@@ -117,40 +82,30 @@ class Computer:
     def WriteLocation(self, location, value):
         self._programData[location] = value
 
-    def Boot(self,threaded=False):
-        if (threaded):
-            func =  lambda computer: computer.Run()
-            self._threadFunc = func
-            self._thread = threading.Thread(target=self._threadFunc, args=(self,))
-            self._inputEvent = threading.Event()
-            self._outputEvent = threading.Event()
-            bootInfo = (self._thread, self._inputEvent, self._outputEvent)
-        else:
-            bootInfo = (None)
-        return bootInfo
+    def PeekAtOpCodeValue(self):
+        opCodeValue = self.ReadLocation(self._programIndex)
+        valueAsString = str(opCodeValue)
+        if (len(valueAsString)>2):
+            opCodeValue = int(valueAsString[-2:])
+        return opCodeValue
 
-    def Run(self):
-        self._state = 1
-        go = True
-        while(True == go):
-            opCodeValue = self.ReadLocation(self._programIndex)
-            valueAsString = str(opCodeValue)
-            if (len(valueAsString)>2):
-                opCodeValue = int(valueAsString[-2:])
-            opCodeConstructor = self.opCodeTable[opCodeValue]
-            opCodeInstance = opCodeConstructor(self,self._programIndex)
+    def DoNext(self):
+        opCodeValue = self.PeekAtOpCodeValue()
+        opCodeConstructor = Computer.opCodeTable[opCodeValue]
+        opCodeInstance = opCodeConstructor(self,self._programIndex)
+        opCodeInstance.RunOpCode()
+        returnValue = None
+        if (opCodeValue == 4):
+            returnValue = self.GetOutput()
+        continueRun = True
+        if (opCodeValue == 99):
+            continueRun = False
 
-            if (isinstance(opCodeInstance, Halt)):
-                go = False
+        self._programLine = self._programLine + 1
 
-            opCodeReturnValue = opCodeInstance.RunOpCode()
+        inputNext = False
+        opCodeValue = self.PeekAtOpCodeValue()
+        if (opCodeValue == 3 and self._input == None):
+            inputNext = True
 
-            if (isinstance(opCodeInstance, Output)): 
-                self._outputs.append(opCodeReturnValue)
-                if (self._outputEvent is not None):
-                    self._outputEvent.set()
-
-            print(f"Just executed program line {self._programLine}, opCodeString: {valueAsString}, thread: {threading.current_thread().ident}")
-            self._programLine = self._programLine + 1
-        self._state = 0
-        return self._outputs[-1]
+        return (returnValue, continueRun, inputNext)

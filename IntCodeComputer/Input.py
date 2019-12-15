@@ -5,10 +5,7 @@ class Input(Operation):
         super().__init__(computer, programLocation, parameterCount, writeOnLastParameter, moveProgramIndex)
 
     def Execute(self):
-        if (self._computer._unattended == False):
-            value = int(input("Input a value: "))
-        else:
-            value = self._computer.GetUnattendedInput()
+        value = self._computer.GetInput()
         writeLocation = self._parameters[0].GetValue()
         self._computer.WriteLocation(writeLocation,value)
         return None
