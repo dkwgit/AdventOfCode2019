@@ -43,7 +43,8 @@ class Robot:
 
     def GetColorOfCurrentPosition(self):
         if (self._currentPosition not in self._coveredTiles.keys()):
-            return 1
+            return self._startColor  #Technially a bug.  I should be saying it's black if unknown and not the start
+                                     #but it still worked.
         else:
             return self._coveredTiles[self._currentPosition]
 
@@ -73,7 +74,8 @@ class Robot:
         self._currentPosition = (x,y)
         self._moves = self._moves + 1
 
-    def Run(self):
+    def Run(self, startColor = 1):
+        self._startColor = startColor
         continueRun = True
         inputNext = False
         while(continueRun):
@@ -85,7 +87,7 @@ class Robot:
                 self.Move()
             else:
                 oneResult, continueRun, inputNext = self._computer.DoNext() 
-        print(f"Covered {len(self._coveredTiles.keys())} tiles")
+        print(f"Covered {len(self._coveredTiles.keys())} tiles") #1932 on Day11-1
         maxX = max(self._coveredTiles.keys(), key=lambda x: x[0])
         minX = min(self._coveredTiles.keys(), key=lambda x: x[0])
         maxY = max(self._coveredTiles.keys(), key=lambda x: x[1])
@@ -95,8 +97,9 @@ class Robot:
         maxX = maxX[0]
         minY = minY[1]
         maxY = maxY[1]
-        xmover = 0 - minX
-        ymover = 0 - minY
+        # Start drawing a row (line) at maxY height (further rows descending to minY), from minX to maxX across.
+        # This means we don't have to do coordinate adjustments.  The last line can be thought of as y=0
+        # regardless of actual y value at that point.
         lines= []
         for y in range(maxY,minY-1,-1):
             line = ''

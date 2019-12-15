@@ -191,7 +191,7 @@ class Driver:
         c = Computer()
         c.LoadProgram(DataFixture.mainDay11)
         robot = Robot(c)
-        robot.Run()
+        robot.Run(1)  #pass 0 for Day11-1, and 1 for Day11-2
      
     def Run(self):
         #self.DoTests()
