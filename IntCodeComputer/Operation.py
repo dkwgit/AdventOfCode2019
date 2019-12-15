@@ -3,19 +3,19 @@ from Parameter import Parameter as Parameter
 
 class Operation(ABC):
 
-    def __init__(self,computer,programLocation):
+    def __init__(self, computer, programLocation, parameterCount, writeOnLastParameter, moveProgramIndex):
         self._computer = computer
         self._programLocation = programLocation
+        self._parameterCount = parameterCount
+        self._width = parameterCount + 1
+        self._writeOnLastParameter = writeOnLastParameter
+        self._moveProgramIndex = moveProgramIndex
+        self._parameterModeString = ''
+        self._opCode = -1
+        self._parameters = []
         self.Configure()
 
     def Configure(self):
-        self._width = self.SetWidth()
-        self._writeOnLastParameter = self.SetWriteOnLastParameter()
-        self._parameterCount = self.SetParameterCount()
-        self._parameterModeString = ''
-        self._moveProgramIndex = self.SetMoveProgramIndex()
-        self._opCode = -1
-        self._parameters = []
         self.SetOpCodeInfo()
         self.SetParameters()
         
@@ -52,20 +52,4 @@ class Operation(ABC):
 
     @abstractmethod
     def Execute(self):
-        pass
-
-    @abstractmethod
-    def SetWidth(self):
-        pass
-
-    @abstractmethod
-    def SetWriteOnLastParameter(self):
-        pass
-
-    @abstractmethod
-    def SetMoveProgramIndex(self):
-        pass
-
-    @abstractmethod
-    def SetParameterCount(self):
         pass

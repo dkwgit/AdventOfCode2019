@@ -2,8 +2,8 @@ from Operation import Operation as Operation
 
 class Equals(Operation):
 
-    def __init__(self, computer, programLocation):
-        super().__init__(computer, programLocation)
+    def __init__(self, computer, programLocation, parameterCount, writeOnLastParameter, moveProgramIndex):
+        super().__init__(computer, programLocation, parameterCount, writeOnLastParameter, moveProgramIndex)
 
     def Execute(self):
         a = self._parameters[0].GetValue()
@@ -13,15 +13,3 @@ class Equals(Operation):
         else:
             self._computer.WriteLocation(self._parameters[2].GetValue(),0)
         return None
-
-    def SetWidth(self):
-        return 4
-
-    def SetWriteOnLastParameter(self):
-        return True
-
-    def SetMoveProgramIndex(self):
-        return True
-
-    def SetParameterCount(self):
-        return 3

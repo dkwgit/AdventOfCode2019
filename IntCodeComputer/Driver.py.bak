@@ -26,12 +26,11 @@ class Driver:
             for idx, inputOutputTuple in enumerate(testIO):
                 value, output = inputOutputTuple
                 print(f"\t\tRunning subtest {idx + 1}")
-                c = Computer(True, None if value is None else [value])
-                bootInfo = c.Boot()
-                result = c.RunProgram(testData)
+                c = Computer(testData, True, None if value is None else [value])
+                result = c.Boot()
                 if (not isinstance(output, list)):
-                    print(f"\t\t\tTest produced {result} with expected {output}")
-                    assert(result == output)
+                print(f"\t\t\tTest produced {result} with expected {output}")
+                assert(result == output)
                 else:
                     print(f"\t\t\tTest produced {c._outputs} with expected {output}")
                     assert(c._outputs == output)
@@ -69,9 +68,8 @@ class Driver:
         output = None
         assert(len(settings)==5)
         for index,setting in enumerate(settings):
-            c = Computer(True, [setting, nextInput])
-            bootInfo = c.Boot()
-            nextInput = c.RunProgram(programData)
+            c = Computer(programData, True, [setting, nextInput])
+            nextInput = c.Boot()
         output = nextInput
         return output
 
@@ -87,16 +85,15 @@ class Driver:
         computers = []
         nextValue = 0
         for index,setting in enumerate(amplifierSettings):
-            c = Computer(True, [setting, nextValue])
-            bootInfo = c.Boot(True)
-            c.RunProgram(programData)
+            c = Computer(programData, True, [setting, nextValue])
+            c.Boot(True)
             computers.append(c)
-            runningComputers.append(c)
+            runningComputers.append([c,t])
             nextValue = c.GetHighestOutput()
         loop = 5
         while(loop > 0):
             for index in range(len(runningComputers)):
-                c= runningComputers[index]
+                c,t = runningComputers[index]
                 if (c is None):
                     # in theory each amplifier stops in linear succession
                     assert(0==1)
@@ -117,19 +114,20 @@ class Driver:
         allResults.sort()
         return allResults[-1]
 
-    def RunDay9(self):
-        c1 = Computer(True,[1])
-        val1 = c1.RunProgram(DataFixture.mainDay9)
+	 def RunDay9(self):
+        c1 = Computer(DataFixture.mainDay9,True,[1])
+        val1 = c1.Run()
         print(f"Run of Day 9-1 with input 1 produces {val1}") #3533056970
-        c2 = Computer(True,[2])
-        val2 = c2.RunProgram(DataFixture.mainDay9)
+        c2 = Computer(DataFixture.mainDay9,True,[2])
+        val2 = c2.Run()
         print(f"Run of Day 9-2 with input 2 produces {val2}") #72852
-
-    def RunDay7(self):
-        maxOutput = self.FindMaxOutput(DataFixture.mainDataDay7)
+     
+     def RunDay7(self):
+      	maxOutput = self.FindMaxOutput(DataFixture.mainDataDay7)
         print(f"Max possible output is {maxOutput}") #437860
         maxFeedbackOutput = self.FindMaxOutputWithFeedback(DataFixture.mainDataDay7)
         print(f"Max possible output with feedback is {maxFeedbackOutput}") #49810599
+
      
     def Run(self):
         self.DoTests()

@@ -26,7 +26,7 @@ class Computer:
             99: lambda computer, programlocation :   Halt(computer,programlocation, 1, False, False)
         }
 
-    def RunProgram(self, programData):
+    def __init__(self, programData, unattended = False, unattendedInputs = None):
         self._programData = programData.copy()
         moreMemory = []
         for idx in range(0,1024):
@@ -34,15 +34,6 @@ class Computer:
         self._programData.extend(moreMemory)
         self._programIndex = 0
         self._programLine = 0
-        if (self._thread):
-            self._thread.start()
-        else:
-            return self.Run()
-
-    def __init__(self,unattended = False, unattendedInputs = None):
-        self._programData = None
-        self._programIndex = None
-        self._programLine = None
         self._unattended = unattended
         self._unattendedInputs = unattendedInputs
         self._currentUnattendedInput = 0
@@ -87,6 +78,8 @@ class Computer:
         self._outputs.append(value)
 
     def GetUnattendedInput(self):
+        if (self._unattendedInputs is None):
+            return None
         assert(self._unattended == True)
         if (self._unattended == True):
             if (self._currentUnattendedInput == len(self._unattendedInputs) and self._inputEvent != None):
@@ -118,6 +111,7 @@ class Computer:
             self._thread = threading.Thread(target=self._threadFunc, args=(self,))
             self._inputEvent = threading.Event()
             self._outputEvent = threading.Event()
+            self._thread.start()
             bootInfo = (self._thread, self._inputEvent, self._outputEvent)
         else:
             bootInfo = (None)

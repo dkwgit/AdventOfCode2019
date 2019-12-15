@@ -2,8 +2,8 @@ from Operation import Operation as Operation
 
 class JumpIfTrue(Operation):
 
-    def __init__(self, computer, programLocation):
-        super().__init__(computer, programLocation)
+    def __init__(self, computer, programLocation, parameterCount, writeOnLastParameter, moveProgramIndex):
+        super().__init__(computer, programLocation, parameterCount, writeOnLastParameter, moveProgramIndex)
 
     def Execute(self):
         condition = self._parameters[0].GetValue()
@@ -13,15 +13,3 @@ class JumpIfTrue(Operation):
         else:
             self._moveProgramIndex = True
         return None
-
-    def SetWidth(self):
-        return 3
-
-    def SetWriteOnLastParameter(self):
-        return False
-
-    def SetMoveProgramIndex(self):
-        return False
-
-    def SetParameterCount(self):
-        return 2
