@@ -1,5 +1,10 @@
+import sys
+import threading
+sys.path.append('C:\\users\\dkwrig\\repos\\AdventOfCode2019\\IntCodeComputer')
+
 from Computer import Computer as Computer
 from DataFixture import DataFixture as DataFixture
+from Robot import Robot as Robot
 from itertools import permutations 
 import threading
 
@@ -117,6 +122,22 @@ class Driver:
         allResults.sort()
         return allResults[-1]
 
+    def RunDay5(self):
+        c = Computer(True, [1])
+        bootInfo = c.Boot()
+        result = c.RunProgram(DataFixture.mainDataDay5)
+        print(f"Day 5-1, result is {result}, expected 3122865")
+        c = Computer(True, [5])
+        bootInfo = c.Boot()
+        result = c.RunProgram(DataFixture.mainDataDay5)
+        print(f"Day 5-2, result is {result}, expected 773660")
+
+    def RunDay7(self):
+        maxOutput = self.FindMaxOutput(DataFixture.mainDataDay7)
+        print(f"Max possible output is {maxOutput}") #437860
+        maxFeedbackOutput = self.FindMaxOutputWithFeedback(DataFixture.mainDataDay7)
+        print(f"Max possible output with feedback is {maxFeedbackOutput}") #49810599
+
     def RunDay9(self):
         c1 = Computer(True,[1])
         val1 = c1.RunProgram(DataFixture.mainDay9)
@@ -125,17 +146,29 @@ class Driver:
         val2 = c2.RunProgram(DataFixture.mainDay9)
         print(f"Run of Day 9-2 with input 2 produces {val2}") #72852
 
-    def RunDay7(self):
-        maxOutput = self.FindMaxOutput(DataFixture.mainDataDay7)
-        print(f"Max possible output is {maxOutput}") #437860
-        maxFeedbackOutput = self.FindMaxOutputWithFeedback(DataFixture.mainDataDay7)
-        print(f"Max possible output with feedback is {maxFeedbackOutput}") #49810599
+    def RunDay11(self):
+        c = Computer(True)
+        bootInfo = c.Boot(True)
+        retVal = c.RunProgram(DataFixture.mainDay11)
+        robot = Robot(c)
+        robot.Run()
      
     def Run(self):
-        self.DoTests()
-        self.RunDay7()
-        self.RunDay9()
-       
-        
+        #self.DoTests()
+        #self.RunDay5()
+        #self.RunDay7()
+        #self.RunDay9()
+        self.RunDay11()
+
+d = Driver()
+d.Run()
+
+
+
+
+
+
+
+
 
 

@@ -36,6 +36,7 @@ class Computer:
         self._programLine = 0
         if (self._thread):
             self._thread.start()
+            print(f"Computer will run on thread: {self._thread.ident}")
         else:
             return self.Run()
 
@@ -45,6 +46,9 @@ class Computer:
         self._programLine = None
         self._unattended = unattended
         self._unattendedInputs = unattendedInputs
+        if (self._unattended == True):
+            if (self._unattendedInputs is None):
+                self._unattendedInputs = []
         self._currentUnattendedInput = 0
         self._outputs = []
         self._state = -1
@@ -63,7 +67,9 @@ class Computer:
 
     def AddInput(self, inputValue):
         assert(self._unattended == True)
+        print(f"Adding input from thread: {threading.current_thread().ident}")
         self._unattendedInputs.append(inputValue)
+        print(f"number of inputs is now: {len(self._currentUnattendedInput)}, number read is {self._currentUnattendedInput}")
         if (self._inputEvent is not None):
             self._inputEvent.set()
 
@@ -144,6 +150,7 @@ class Computer:
                 if (self._outputEvent is not None):
                     self._outputEvent.set()
 
+            print(f"Just executed program line {self._programLine}, opCodeString: {valueAsString}, thread: {threading.current_thread().ident}")
             self._programLine = self._programLine + 1
         self._state = 0
         return self._outputs[-1]
