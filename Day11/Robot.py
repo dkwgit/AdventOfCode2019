@@ -113,5 +113,5 @@ class Robot:
                 line = line + char
             lines.append(line)
         for ln in lines:
-            print(ln)
+            print(ln)  #Should give EGHKGJER
 
