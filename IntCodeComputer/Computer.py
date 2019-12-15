@@ -43,6 +43,7 @@ class Computer:
         self._relativeBase = 0
         self._input = None
         self._output = None
+        self._halted = None
 
     def GetRelativeBase(self):
         return self._relativeBase
@@ -89,7 +90,12 @@ class Computer:
             opCodeValue = int(valueAsString[-2:])
         return opCodeValue
 
+    def GetHalted(self):
+        return self._halted is not None and self._halted == True
+
     def DoNext(self):
+        assert(self._halted is None or self._halted == False)
+        self._halted = False
         opCodeValue = self.PeekAtOpCodeValue()
         opCodeConstructor = Computer.opCodeTable[opCodeValue]
         opCodeInstance = opCodeConstructor(self,self._programIndex)
@@ -100,6 +106,7 @@ class Computer:
         continueRun = True
         if (opCodeValue == 99):
             continueRun = False
+            self._halted = True
 
         self._programLine = self._programLine + 1
 
