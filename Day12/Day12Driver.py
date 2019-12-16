@@ -3,13 +3,26 @@ from MoonTimeSeries import MoonTimeSeries as MoonTimeSeries
 
 class Day12Driver:
 
-    def TestApplyGravity(self):
+    def TestCalculateNextInSeries(self):
         mts = MoonTimeSeries()
-        for index, item in enumerate(mts.GetIterator(DataFixture.startInfo,1)):
-            print(f"Series step {index}: {item}")
+        testData = DataFixture.startInfo
+        testList = []
+        for index,data in testData:
+            testList.append(data)
+        resultList = [DataFixture.startInfo[0][1]]
+        index = 1
+        for item in mts.GetIterator(DataFixture.startInfo[0][1],10):
+            print(f"Test {index}: result from time series is same as test data")
+            resultList.append(item)
+            testItem = testList[index]
+            if (testItem != item):
+                print(f"Test: {testItem}")
+                print(f"Actual {item}")
+            assert(testItem == item)
+            index = index + 1
 
 d = Day12Driver()
-d.TestApplyGravity()
+d.TestCalculateNextInSeries()
 
 
     
