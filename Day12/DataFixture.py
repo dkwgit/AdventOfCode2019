@@ -7,7 +7,19 @@ VelocityChange = namedtuple('VelocityChange', 'x y z moonName')
 
 
 class DataFixture:
-    startInfo = [
+
+    energySeries = [
+        (0,
+        [
+        MoonInfo(MoonPosition(-8,-10,0,'Io'), MoonVelocity(0,0,0,'Io'),'Io'),
+        MoonInfo(MoonPosition(5,5,10,'Europa'), MoonVelocity(0,0,0,'Europa'),'Europa'),
+        MoonInfo(MoonPosition(2,-7,3,'Ganymede'), MoonVelocity(0,0,0,'Ganymede'),'Ganymede'),
+        MoonInfo(MoonPosition(9,-8,-3,'Callisto'), MoonVelocity(0,0,0,'Callisto'),'Callisto')
+        ]
+        )
+    ]
+
+    testSeries1 = [
         (0,
         [
         MoonInfo(MoonPosition(-1,0,2,'Io'), MoonVelocity(0,0,0,'Io'),'Io'),

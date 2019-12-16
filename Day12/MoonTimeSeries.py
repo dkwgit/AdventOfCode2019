@@ -24,25 +24,28 @@ class MoonTimeSeries:
         moon2 = VelocityChange(xChange * (-1),yChange * (-1),zChange * (-1),moon2.moonName)
         return (moon1, moon2)
 
-    def ApplyGravityToAllMoons(self, positions):
+    def ApplyGravityToAllMoons(self, positions, velocities):
         pointCombis = combinations(positions,2) #all pairs of moons
-        velocitiesChanges = {}
+        pairVelocityChanges = {}
         for moonName in MoonTimeSeries.order:
-            velocitiesChanges[moonName] = []
+            pairVelocityChanges[moonName] = []
         for moon1, moon2 in pointCombis:
             velocityChange1, velocityChange2 = self.ApplyGravityToTwoMoons(moon1, moon2)
-            velocitiesChanges[velocityChange1.moonName].append(velocityChange1)
-            velocitiesChanges[velocityChange2.moonName].append(velocityChange2)
-        velocities = []
-        for moonName in velocitiesChanges.keys():
-            velocityChangeList = velocitiesChanges[moonName]
-            velocities.append(VelocityChange(
+            pairVelocityChanges[velocityChange1.moonName].append(velocityChange1)
+            pairVelocityChanges[velocityChange2.moonName].append(velocityChange2)
+        changes = []
+        for moonName in pairVelocityChanges.keys():
+            velocityChangeList = pairVelocityChanges[moonName]
+            changes.append(VelocityChange(
                 sum(map(lambda x: x.x,velocityChangeList)),
                 sum(map(lambda x: x.y,velocityChangeList)),
                 sum(map(lambda x: x.z,velocityChangeList)),
                 moonName
             ))
-        return velocities
+        newVelocities = []
+        for change,velocity in zip(changes,velocities):
+            newVelocities.append(self.AddChangeToVelocity(change, velocity))
+        return newVelocities
 
     def AddVelocityToPosition(self, position, velocity):
         return MoonPosition(
@@ -50,6 +53,14 @@ class MoonTimeSeries:
             position.y + velocity.y,
             position.z + velocity.z,
             position.moonName
+        )
+
+    def AddChangeToVelocity(self, change, velocity):
+        return MoonVelocity(
+            velocity.x + change.x,
+            velocity.y + change.y,
+            velocity.z + change.z,
+            velocity.moonName
         )
 
     def ApplyVelocities(self, positions, velocities):
@@ -64,27 +75,11 @@ class MoonTimeSeries:
             nextStepData = []
             positions = list(map(lambda x : x.moonPosition, stepData))
             velocities = list(map(lambda x : x.moonVelocity, stepData))
-            velocityChanges = self.ApplyGravityToAllMoons(positions)
-            moonVelocities = []
-            for velocity,change in zip(velocities, velocityChanges):
-                moonVelocities.append(
-                    MoonVelocity(
-                        velocity.x + change.x,
-                        velocity.y + change.y,
-                        velocity.z + change.z,
-                        velocity.moonName
-                    )
-                )
-            moonPositions = self.ApplyVelocities(positions,moonVelocities)
-            for moonPosition, moonVelocity in zip(moonPositions,moonVelocities):
+            newMoonVelocities = self.ApplyGravityToAllMoons(positions,velocities)
+            newMoonPositions = self.ApplyVelocities(positions,newMoonVelocities)
+            for moonPosition, moonVelocity in zip(newMoonPositions,newMoonVelocities):
                 assert(moonPosition.moonName == moonVelocity.moonName)
-                nextStepData.append(
-                    MoonInfo(
-                        moonPosition,
-                        moonVelocity,
-                        moonPosition.moonName
-                    )
-                )
+                nextStepData.append(MoonInfo(moonPosition,moonVelocity,moonPosition.moonName))
             stepData = nextStepData #to properly generate the next in series, this is the new input
             yield(nextStepData)
 
