@@ -1,6 +1,7 @@
 from DataFixture import *
 from MoonTimeSeries import MoonTimeSeries as MoonTimeSeries
 import math
+import cProfile
 
 class Day12Driver:
 
@@ -63,7 +64,7 @@ class Day12Driver:
             if h in hashes.keys():
                 print(f"Same state occurs at step {step}!")
                 break
-            if (step % 100000 == 0):
+            if (step % 1000000 == 0):
                 print(f"On step {step}")
             hashes[h]=1
             data = item
@@ -71,17 +72,17 @@ class Day12Driver:
 
         
 d = Day12Driver()
-d.TestCalculateNextInSeries('Test: First test data from puzzle',DataFixture.testSeries1,10)
-d.TestCalculateNextInSeries('Test: Energy series from puzzle',DataFixture.energySeries,100)
-index,testData = DataFixture.testSeries1[0]
-d.CalculateEnergyForSeries(10,testData) #179
-d.CalculateEnergyForSeries(1000,testData) #183
-index,energySeries = DataFixture.energySeries[0]
-d.CalculateEnergyForSeries(100,energySeries) #1940
+#d.TestCalculateNextInSeries('Test: First test data from puzzle',DataFixture.testSeries1,10)
+#d.TestCalculateNextInSeries('Test: Energy series from puzzle',DataFixture.energySeries,100)
+#index,testData = DataFixture.testSeries1[0]
+#d.CalculateEnergyForSeries(10,testData) #179
+#d.CalculateEnergyForSeries(1000,testData) #183
+#index,energySeries = DataFixture.energySeries[0]
+#d.CalculateEnergyForSeries(100,energySeries) #1940
 index,day12Series = DataFixture.day12Series[0]
-d.CalculateEnergyForSeries(1000,day12Series) #6849
-d.FindFirstRepeat(testData,10000000) #2772
-d.FindFirstRepeat(day12Series,10000000)
+#d.CalculateEnergyForSeries(1000,day12Series) #6849
+#d.FindFirstRepeat(testData,10000000) #2772
+d.FindFirstRepeat(day12Series,100000000)
 
 
     
