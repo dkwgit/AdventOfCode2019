@@ -4,22 +4,26 @@ import math
 
 class Day12Driver:
 
-    def TestCalculateNextInSeries(self):
+    def TestCalculateNextInSeries(self,testName,testData,iterations):
+        print(f"Running test {testName}")
         mts = MoonTimeSeries()
-        testData = DataFixture.testSeries1
         testList = []
-        for index,data in testData:
-            testList.append(data)
-        resultList = [DataFixture.testSeries1[0][1]]
+        indexes = []
+        for itemNumber,data in testData:
+            testList.append((itemNumber,data))
+            indexes.append(itemNumber)
+        resultList = [(0,testData[0][1])]
         index = 1
-        for item in mts.GetIterator(DataFixture.testSeries1[0][1],10):
-            print(f"Test {index}: result from time series is same as test data")
-            resultList.append(item)
-            testItem = testList[index]
-            if (testItem != item):
-                print(f"Test: {testItem}")
-                print(f"Actual {item}")
-            assert(testItem == item)
+        for item in mts.GetIterator(testData[0][1],iterations):
+            resultList.append((index,item))
+            if (index in indexes):
+                print(f"\nSub test {index}: result from time series is same as test data")
+                discard, testItem = [subtest for subtest in testList if subtest[0] == index][0]
+                for rowActual, rowTest in zip(item,testItem):
+                    if (rowActual != rowTest):
+                        print(f"Test: {rowTest}")
+                        print(f"Actual {rowActual}")
+                    assert(rowActual == rowTest)
             index = index + 1
 
     def CalculateEnergyOfSystem(self, system):
@@ -42,10 +46,11 @@ class Day12Driver:
         return (totalEnergyOfSystem, lastItem)
         
 d = Day12Driver()
-d.TestCalculateNextInSeries()
+d.TestCalculateNextInSeries('Test: First test data from puzzle',DataFixture.testSeries1,10)
+d.TestCalculateNextInSeries('Test: Energy series from puzzle',DataFixture.energySeries,100)
 index,testData = DataFixture.testSeries1[0]
 d.CalculateEnergyForSeries(10,testData) #179
-d.CalculateEnergyForSeries(1000,testData) #181
+d.CalculateEnergyForSeries(1000,testData) #183
 index,energySeries = DataFixture.energySeries[0]
 d.CalculateEnergyForSeries(100,energySeries) #1940  --100 is fine
 d.CalculateEnergyForSeries(1000,energySeries) #14645 --but 1000 is somehow wrong!
