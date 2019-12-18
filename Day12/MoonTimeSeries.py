@@ -1,9 +1,13 @@
 from DataFixture import *
 from itertools import combinations
+import numpy as np
 
 class MoonTimeSeries:
 
     order = ['Io','Europa', 'Ganymede', 'Callisto']
+
+    def GetMoonDataWithChangeArray(self, moon):
+        return (moon[0],moon[1],np.array[[0,0,0]])
 
     def GetChange(self, a, b):
         val = None
@@ -15,37 +19,26 @@ class MoonTimeSeries:
             val = 0
         return val
 
-    def ApplyGravityToTwoMoons(self, moon1, moon2):
-        assert(moon1.moonName != moon2.moonName)
-        xChange = self.GetChange(moon1.x, moon2.x)
-        yChange = self.GetChange(moon1.y, moon2.y)
-        zChange = self.GetChange(moon1.z, moon2.z)
-        moon1 = VelocityChange(xChange,yChange,zChange,moon1.moonName)
-        moon2 = VelocityChange(xChange * (-1),yChange * (-1),zChange * (-1),moon2.moonName)
-        return (moon1, moon2)
+    def ApplyGravityToTwoMoons(self, stepData, moon1Index, moon2Index, changes):
+        xChange = self.GetChange(stepData[0][moon1Index][0], stepData[0][moon2Index][0])
+        yChange = self.GetChange(stepData[0][moon1Index][1], stepData[0][moon2Index][1])
+        zChange = self.GetChange(stepData[0][moon1Index][2], stepData[0][moon2Index][2])
+        changes[moon1Index] = np.add(changes[moon1Index],np.array([[xChange,yChange,zChange]]))
+        changes[moon2Index] = np.add(changes[moon2Index],np.array([[xChange*-1,yChange*-1,zChange*-1]]))
 
-    def ApplyGravityToAllMoons(self, positions, velocities):
-        pointCombis = combinations(positions,2) #all pairs of moons
-        pairVelocityChanges = {}
-        for moonName in MoonTimeSeries.order:
-            pairVelocityChanges[moonName] = []
-        for moon1, moon2 in pointCombis:
-            velocityChange1, velocityChange2 = self.ApplyGravityToTwoMoons(moon1, moon2)
-            pairVelocityChanges[velocityChange1.moonName].append(velocityChange1)
-            pairVelocityChanges[velocityChange2.moonName].append(velocityChange2)
-        changes = []
-        for moonName in pairVelocityChanges.keys():
-            velocityChangeList = pairVelocityChanges[moonName]
-            changes.append(VelocityChange(
-                sum(map(lambda x: x.x,velocityChangeList)),
-                sum(map(lambda x: x.y,velocityChangeList)),
-                sum(map(lambda x: x.z,velocityChangeList)),
-                moonName
-            ))
-        newVelocities = []
-        for change,velocity in zip(changes,velocities):
-            newVelocities.append(self.AddChangeToVelocity(change, velocity))
-        return newVelocities
+    def ApplyGravityToAllMoons(self, stepData):
+        numMoons = np.shape(stepData[0])[0] #get the positions (1st element tuple, get the 1st axis (number of moons))
+        #parallel array for accumulating velocity changes
+        changes = np.zeros((4,3))
+        pointCombis = combinations(range(numMoons),2) #all pairs of moons
+        for moon1Index, moon2Index in pointCombis:
+            self.ApplyGravityToTwoMoons(stepData,moon1Index, moon2Index, changes)
+        #add the changes to velocity to the velocity component [1]
+        stepData[1] = np.add(stepData[1],changes)
+        #add the velocity component [1] to the position component [0]
+        stepData[0] = np.add(stepData[0],stepData[1])
+        return stepData
+        
 
     def AddVelocityToPosition(self, position, velocity):
         return MoonPosition(
@@ -55,31 +48,9 @@ class MoonTimeSeries:
             position.moonName
         )
 
-    def AddChangeToVelocity(self, change, velocity):
-        return MoonVelocity(
-            velocity.x + change.x,
-            velocity.y + change.y,
-            velocity.z + change.z,
-            velocity.moonName
-        )
-
-    def ApplyVelocities(self, positions, velocities):
-        newPositions = []
-        for position,velocity in zip(positions,velocities):
-            newPosition = self.AddVelocityToPosition(position,velocity)
-            newPositions.append(newPosition)
-        return newPositions
-
     def GetIterator(self, stepData, numberOfSteps):
         for step in range(numberOfSteps):
-            nextStepData = []
-            positions = list(map(lambda x : x.moonPosition, stepData))
-            velocities = list(map(lambda x : x.moonVelocity, stepData))
-            newMoonVelocities = self.ApplyGravityToAllMoons(positions,velocities)
-            newMoonPositions = self.ApplyVelocities(positions,newMoonVelocities)
-            for moonPosition, moonVelocity in zip(newMoonPositions,newMoonVelocities):
-                assert(moonPosition.moonName == moonVelocity.moonName)
-                nextStepData.append(MoonInfo(moonPosition,moonVelocity,moonPosition.moonName))
+            nextStepData = self.ApplyGravityToAllMoons(stepData)
             stepData = nextStepData #to properly generate the next in series, this is the new input
             yield(nextStepData)
 
