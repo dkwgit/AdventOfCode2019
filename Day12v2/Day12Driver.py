@@ -65,47 +65,41 @@ class Day12Driver:
         print(f"Total energy of system after {iterations} iterations: {totalEnergyOfSystem}")
         return (totalEnergyOfSystem, lastItem)
 
-    def FindFirstRepeat(self,db,data,iterationsToTry):
+    def FindFirstRepeat(self,data,iterationsToTry):
         hashes = {}
         mts = MoonTimeSeries()
         h = self.GetHashForSystem(data)
-        #db[h] = "0"
         hashes[h] = 0
         step = 1
         for index,item in enumerate(mts.GetIterator(data,iterationsToTry)):
             h = self.GetHashForSystem(item)
-            #h in db.keys()
             if h in hashes.keys():
                 print(f"Same state occurs at step {step}!")
                 break
             if (step % 1000000 == 0):
                 print(f"On step {step}")
-                #db["step_"+str(step)] = np.array_str(item,max_line_width=1024)
-            #db[h]=str(step)
             hashes[h] = step
             step = step + 1
-
-
-#db = dbm.open('cache', 'c')       
+   
 d = Day12Driver()
-#d.TestCalculateNextInSeries('Test: First test data from puzzle',DataFixture.testSeries1,10)
-#d.TestCalculateNextInSeries('Test: Energy series from puzzle',DataFixture.energySeries,100)
-#index,testData = DataFixture.testSeries1[0]
-#testData = d.ConvertToNumpy(testData)
-#d.CalculateEnergyForSeries(10,testData) #179
-#d.CalculateEnergyForSeries(1000,testData) #289
-#index,energySeries = DataFixture.energySeries[0]
-#energySeries = d.ConvertToNumpy(energySeries)
-#d.CalculateEnergyForSeries(100,energySeries) #1940
+d.TestCalculateNextInSeries('Test: First test data from puzzle',DataFixture.testSeries1,10)
+d.TestCalculateNextInSeries('Test: Energy series from puzzle',DataFixture.energySeries,100)
+
+index,testData = DataFixture.testSeries1[0]
+testData = d.ConvertToNumpy(testData)
+d.CalculateEnergyForSeries(10,testData) #179
+d.CalculateEnergyForSeries(1000,testData) #289
+
+index,energySeries = DataFixture.energySeries[0]
+energySeries = d.ConvertToNumpy(energySeries)
+d.CalculateEnergyForSeries(100,energySeries) #1940
+
 index,day12Series = DataFixture.day12Series[0]
 day12Series = d.ConvertToNumpy(day12Series)
-#d.CalculateEnergyForSeries(1000,day12Series) #6849
-db = ''
-#d.FindFirstRepeat(db,testData,3000) #2772
-#db.close()
-#db = dbm.open('cache', 'c') 
-d.FindFirstRepeat(db,day12Series,2000000000)
-#db.close()
+d.CalculateEnergyForSeries(1000,day12Series) #6849
+d.FindFirstRepeat(testData,3000) #2772
+d.FindFirstRepeat(day12Series, 50000) #2000000000)
+
 
 
     
