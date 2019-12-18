@@ -104,7 +104,7 @@ db = ''
 #d.FindFirstRepeat(db,testData,3000) #2772
 #db.close()
 #db = dbm.open('cache', 'c') 
-d.FindFirstRepeat(db,day12Series,50000)
+d.FindFirstRepeat(db,day12Series,2000000000)
 #db.close()
 
 
