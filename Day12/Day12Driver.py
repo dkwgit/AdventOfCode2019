@@ -66,6 +66,8 @@ class Day12Driver:
         return (totalEnergyOfSystem, lastItem)
 
     def FindFirstRepeat(self,data,iterationsToTry):
+        startState = data.copy()
+        #startStateX = 
         hashes = {}
         mts = MoonTimeSeries()
         h = self.GetHashForSystem(data)
@@ -82,23 +84,23 @@ class Day12Driver:
             step = step + 1
    
 d = Day12Driver()
-d.TestCalculateNextInSeries('Test: First test data from puzzle',DataFixture.testSeries1,10)
-d.TestCalculateNextInSeries('Test: Energy series from puzzle',DataFixture.energySeries,100)
+d.TestCalculateNextInSeries('Test: First test data from puzzle',DataFixture.testSeries1.copy(),10)
+d.TestCalculateNextInSeries('Test: Energy series from puzzle',DataFixture.energySeries.copy(),100)
 
 index,testData = DataFixture.testSeries1[0]
 testData = d.ConvertToNumpy(testData)
-d.CalculateEnergyForSeries(10,testData) #179
-d.CalculateEnergyForSeries(1000,testData) #289
+d.CalculateEnergyForSeries(10,testData.copy()) #179
+d.CalculateEnergyForSeries(1000,testData.copy()) #183
 
 index,energySeries = DataFixture.energySeries[0]
-energySeries = d.ConvertToNumpy(energySeries)
-d.CalculateEnergyForSeries(100,energySeries) #1940
+energySeries = d.ConvertToNumpy(energySeries.copy())
+d.CalculateEnergyForSeries(100,energySeries.copy()) #1940
 
 index,day12Series = DataFixture.day12Series[0]
-day12Series = d.ConvertToNumpy(day12Series)
-d.CalculateEnergyForSeries(1000,day12Series) #6849
-d.FindFirstRepeat(testData,3000) #2772
-d.FindFirstRepeat(day12Series, 50000) #2000000000)
+day12Series = d.ConvertToNumpy(day12Series.copy())
+d.CalculateEnergyForSeries(1000,day12Series.copy()) #6849
+d.FindFirstRepeat(testData.copy(),3000) #2772
+d.FindFirstRepeat(day12Series.copy(), 50000) #2000000000)
 
 
 
