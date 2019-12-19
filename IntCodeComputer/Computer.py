@@ -92,6 +92,15 @@ class Computer:
 
     def GetHalted(self):
         return self._halted is not None and self._halted == True
+    
+    def RunToNextOutput(self):
+        continueRun = True
+        result = None
+        while (continueRun and result is None): 
+            oneResult, continueRun, inputNext = self.DoNext()
+            if (oneResult is not None):
+                result = oneResult
+        return (result,continueRun)
 
     def DoNext(self):
         assert(self._halted is None or self._halted == False)

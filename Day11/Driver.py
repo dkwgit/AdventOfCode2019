@@ -1,12 +1,11 @@
+import os
 import sys
-import threading
-sys.path.append('C:\\users\\dkwrig\\repos\\AdventOfCode2019\\IntCodeComputer')
+sys.path.append(os.path.abspath('../IntCodeComputer'))
 
 from Computer import Computer as Computer
 from DataFixture import DataFixture as DataFixture
 from Robot import Robot as Robot
-from itertools import permutations 
-import threading
+from itertools import permutations
 
 class Driver:
     def DoTests(self):
