@@ -4,10 +4,8 @@ import numpy as np
 
 class MoonTimeSeries:
 
-    order = ['Io','Europa', 'Ganymede', 'Callisto']
-
     def GetMoonDataWithChangeArray(self, moon):
-        return (moon[0],moon[1],np.array[[0,0,0]])
+        return (moon[0],moon[1],np.array([[0,0,0]]))
 
     def GetChange(self, a, b):
         val = None
@@ -38,15 +36,6 @@ class MoonTimeSeries:
         #add the velocity component [1] to the position component [0]
         stepData[0] = np.add(stepData[0],stepData[1])
         return stepData
-        
-
-    def AddVelocityToPosition(self, position, velocity):
-        return MoonPosition(
-            position.x + velocity.x,
-            position.y + velocity.y,
-            position.z + velocity.z,
-            position.moonName
-        )
 
     def GetIterator(self, stepData, numberOfSteps):
         for step in range(numberOfSteps):

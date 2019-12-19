@@ -2,6 +2,8 @@ from DataFixture import *
 from MoonTimeSeries import MoonTimeSeries as MoonTimeSeries
 import math
 import numpy as np
+import sys
+from decimal import Decimal
 
 class Day12Driver:
 
@@ -67,20 +69,44 @@ class Day12Driver:
 
     def FindFirstRepeat(self,data,iterationsToTry):
         startState = data.copy()
-        #startStateX = 
-        hashes = {}
+        startStateX =  np.array((startState[0,:,0],startState[1,:,0]))
+        startStateY =  np.array((startState[0,:,1],startState[1,:,1]))
+        startStateZ =  np.array((startState[0,:,2],startState[1,:,2]))
+        xMatch = None
+        yMatch = None
+        zMatch = None
+        #hashes = {}
         mts = MoonTimeSeries()
-        h = self.GetHashForSystem(data)
-        hashes[h] = 0
+        #h = self.GetHashForSystem(data)
+        #hashes[h] = 0
         step = 1
         for index,item in enumerate(mts.GetIterator(data,iterationsToTry)):
-            h = self.GetHashForSystem(item)
-            if h in hashes.keys():
-                print(f"Same state occurs at step {step}!")
-                break
-            if (step % 1000000 == 0):
+            if (step % 100000 == 0):
                 print(f"On step {step}")
-            hashes[h] = step
+            if (xMatch == None):
+                if (np.array_equal(startStateX, np.array((item[0,:,0],item[1,:,0])))):
+                    xMatch = step
+            if (yMatch == None):
+                if (np.array_equal(startStateY, np.array((item[0,:,1],item[1,:,1])))):
+                    yMatch = step
+            if (zMatch == None):
+                if (np.array_equal(startStateZ, np.array((item[0,:,2],item[1,:,2])))):
+                    zMatch = step
+            if (xMatch is not None and yMatch is not None and zMatch is not None):
+                #Got to go Decimal--the value overflowed
+                x = Decimal(xMatch) 
+                y = Decimal(yMatch)
+                z = Decimal(zMatch)
+                lcmArray = [x,y,z]
+                lcmVal = np.lcm.reduce(lcmArray)
+                print(f"At step {step} found a least common multiple for x,y,z matches: ",lcmVal)
+                print(f"Match for x,y,z were achieved at steps {xMatch},{yMatch},{zMatch}")
+                return
+            #h = self.GetHashForSystem(item)
+            #if step != 1 and h in hashes.keys():
+            #   print(f"Same state occurs at step {step}!")
+            #   return
+            #hashes[h] = step
             step = step + 1
    
 d = Day12Driver()
@@ -100,7 +126,7 @@ index,day12Series = DataFixture.day12Series[0]
 day12Series = d.ConvertToNumpy(day12Series.copy())
 d.CalculateEnergyForSeries(1000,day12Series.copy()) #6849
 d.FindFirstRepeat(testData.copy(),3000) #2772
-d.FindFirstRepeat(day12Series.copy(), 50000) #2000000000)
+d.FindFirstRepeat(day12Series.copy(), 10000000) #2000000000)
 
 
 
