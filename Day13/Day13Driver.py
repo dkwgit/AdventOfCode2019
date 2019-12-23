@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath('../IntCodeComputer'))
 import itertools
 from Computer import Computer as Computer
 from DataFixture import DataFixture as DataFixture
-from Game import Game
+from Game import Game as Game
 
 class Day13Driver:
 
@@ -33,7 +33,7 @@ class Day13Driver:
         minY = min(triplets, key = lambda x: x[0][1])[0][1]
         maxX = max(triplets, key = lambda x: x[0][0])[0][0]
         maxY = max(triplets, key = lambda x: x[0][1])[0][1]
-        self._game = Game((minX,minY,maxX,maxY))
+        self._game = Game((minX,minY),(maxX,maxY))
         self._game.UpdateDisplay(self._output)
 
     def Run(self):
