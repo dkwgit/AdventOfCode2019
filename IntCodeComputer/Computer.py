@@ -93,14 +93,17 @@ class Computer:
     def GetHalted(self):
         return self._halted is not None and self._halted == True
     
-    def RunToNextOutput(self):
+    def RunToNextIO(self):
         continueRun = True
         result = None
-        while (continueRun and result is None): 
+        inputNext = False
+        while (continueRun and result is None and inputNext == False): 
             oneResult, continueRun, inputNext = self.DoNext()
             if (oneResult is not None):
                 result = oneResult
-        return (result,continueRun)
+            if (self.PeekAtOpCodeValue() == 99):
+                break
+        return (result,continueRun,inputNext)
 
     def DoNext(self):
         assert(self._halted is None or self._halted == False)
