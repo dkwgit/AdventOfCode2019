@@ -53,6 +53,8 @@ class Game:
 
     def __init__(self,computer,minBlockTuple,maxBlockTuple, startData):
         self._positions = {}
+        self._ball = None
+        self._paddle = None
         self._started = False
         self._computerOutput = []
         self._scores = []
@@ -99,11 +101,19 @@ class Game:
                 if (self._started == True):
                     if (item == 0 and (x,y) in self._positions.keys() and self._positions[(x,y)] == 2):
                         print(f"Block at {x},{y} erased.")
-                    if (item == 4):
-                        print(f"Ball moves to {x},{y}")
-                    self._positions[(x,y)] = item
-                else:
-                    self._positions[(x,y)] = item
+                self._positions[(x,y)] = item
+                if (item == 3):
+                    self._paddle  = (x,y)
+                if (item == 4):
+                    currentBall = self._ball
+                    self._ball = (x,y)
+                    if (self._started):
+                        direction = 1 if self._ball[0] - currentBall[0] > 0 else 0 if self._ball[0] - currentBall[0] == 0 else -1
+                        relationToPaddle = 1 if self._paddle[0] - self._ball[0] > 0 else 0 if self._paddle[0] - self._ball[0] == 0 else -1
+                        if (direction != relationToPaddle and relationToPaddle != 0):
+                            self._joyStick = direction
+                        else:
+                            self._joyStick = 0
                 self.SetBlockToScreen(x,y,item)
         
         surfarray.blit_array(self._surface, self._pixels)
@@ -174,6 +184,6 @@ class Game:
                     pygame.quit() 
                     quit() 
             
-            pygame.time.wait(1000)
+            pygame.time.wait(10)
             
             
