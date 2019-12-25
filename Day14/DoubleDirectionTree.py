@@ -14,6 +14,9 @@ class DoubleDirectionTree:
     def AddLeaf(self, node):
         self._leaves.append(node)
 
+    def GetLeaves(self):
+        return self._leaves
+
     def ReportVisit(self, node):
         if (self._nodeVisitedFunc is not None):
             self._nodeVisitedFunc(node)

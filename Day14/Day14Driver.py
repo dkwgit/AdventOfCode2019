@@ -37,9 +37,38 @@ class Day14Driver:
 
         self._tree._nodeVisitedFunc = NodeVisitorFunc
 
-        print("tree created")
         oreNeeded = self.CalculateOre(self._tree)
         print(f"Ore needed for 1 fuel: {oreNeeded}")
+
+    def ProduceOrRelyOnBank(self,node):
+        parent = node.GetRoot()
+        parentOnHand,parentTotalProduced = self._productionBank[parent.GetName()]
+        if (parentOnHand < parent._sentTowardRoot):
+            onHand, totalProduced =  self._productionBank[node.GetName()]
+            self._productionBank[node.GetName()] = (onHand, totalProduced + node._sentTowardRoot)
+            self._productionBank[parent.GetName()] = (parentOnHand+parent._producedFromBranch,parentTotalProduced + parent._producedFromBranch)
+
+    def EvaluateParent(self, node):
+        currentNode = node.GetRoot()
+        if (currentNode.IsRoot()==False):
+            onHand, totalProduced =  self._productionBank[currentNode.GetName()]
+            self._productionBank[currentNode.GetName()] = (onHand - currentNode._sentTowardRoot,totalProduced)
+        if (currentNode.IsRoot()==False and currentNode.GetRoot().IsRoot()==False):
+            parentOnHand, parentTotalProduced =  self._productionBank[currentNode.GetRoot().GetName()]
+            self._productionBank[currentNode.GetRoot().GetName()] = \
+                (parentOnHand + currentNode.GetRoot()._sentTowardRoot, parentTotalProduced +currentNode.GetRoot()._sentTowardRoot)
+
+        if (currentNode.IsRoot() == False):
+            self.EvaluateParent(currentNode)
+            return
+        else:
+            return
+
+    def LeavesToRoots(self):
+        leaves = self._tree.GetLeaves()
+        for leaf in leaves:
+            self.ProduceOrRelyOnBank(leaf)
+            self.EvaluateParent(leaf)          
 
     def RootToLeaves(self,node,quantityNeeded):
         node.Visit()
@@ -52,7 +81,9 @@ class Day14Driver:
 
     def CalculateOre(self,tree):
         maxOre = self.RootToLeaves(tree._root, tree._root._producedFromBranch)
-        return maxOre
+        self.LeavesToRoots()
+        (onHand,totalProduced) = self._productionBank['ORE']
+        return totalProduced
 
     def InsertIntoTree(self,tree,nodeName,sentTowardRoot):
         if (nodeName in self._products.keys()):
@@ -60,6 +91,9 @@ class Day14Driver:
         else:
             producedFromBranch = sentTowardRoot
             branches = []
+        
+        if (sentTowardRoot is None):
+            sentTowardRoot = producedFromBranch
 
         node = Node(tree,nodeName,producedFromBranch,sentTowardRoot)
 
