@@ -41,7 +41,7 @@ class Game:
         self._started = True
 
     def __init__(self,computer):
-        self._maze = {}
+        self._screen = {}
         self._started = False
         self._screenHeight = 1000
         self._screenWidth = 1000
@@ -70,21 +70,21 @@ class Game:
         self._pixels = surfarray.pixels2d(self._surface)
         self.UpdateDisplay(-1)
     
-    def LoadMazeData(self, data):
+    def LoadScreenData(self, data):
         for (pos,blockType) in data:
             self.SetBlockToScreen(pos,blockType)
-            self._maze[pos] = blockType
+            self._screen[pos] = blockType
 
-    def SaveMazeData(self):
+    def SaveScreenData(self):
         filepath = 'Maze.txt'
-        mazeValues = []
-        for k in self._maze.keys():
-            mazeValues.append((k,self._maze[k]))
-        print(mazeValues, file=open(filepath, 'w'))
+        screenValues = []
+        for k in self._screen.keys():
+            screenValues.append((k,self._screen[k]))
+        print(screenValues, file=open(filepath, 'w'))
 
     def FillWithOxygen(self):
-        openSpace = {k:v for (k,v) in self._maze.items() if v == 0 or v ==2 or v == 3}
-        fillFrom = [k for (k,v) in self._maze.items() if v ==2]
+        openSpace = {k:v for (k,v) in self._screen.items() if v == 0 or v ==2 or v == 3}
+        fillFrom = [k for (k,v) in self._screen.items() if v ==2]
 
         def GetBoxToCheck(pos):
             box = []
@@ -183,10 +183,10 @@ class Game:
 
     def SetBlockToScreen(self, pos, blockType):
 
-        if (blockType != 4 and (pos not in self._maze.keys())):
-            self._maze[pos] = blockType
-        if (blockType == 4 and (pos not in self._maze.keys())):
-            self._maze[pos] = 0
+        if (blockType != 4 and (pos not in self._screen.keys())):
+            self._screen[pos] = blockType
+        if (blockType == 4 and (pos not in self._screen.keys())):
+            self._screen[pos] = 0
 
         block = Game.table[str(blockType)]
         blockYLength = block.shape[0]

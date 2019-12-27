@@ -14,7 +14,7 @@ class Day15Driver:
         computer.LoadProgram(program)
         game = Game(computer)
         if (data is not None):
-            game.LoadMazeData(data)
+            game.LoadScreenData(data)
         game.MainLoop()
 
     def LoadMazeFromFile(self,filePath):
