@@ -71,6 +71,8 @@ class Node(ABC):
         self._tree._productBank[self.GetName()] =  (onHand, totalProduced, demand)
         if (onHand >= demand):
             return False
+        if (self.GetName() == 'ORE'):
+            assert(0==1)
         return True
 
 

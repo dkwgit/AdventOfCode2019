@@ -47,6 +47,39 @@ class Day14Driver:
         oreNeeded = self.CalculateOre(self._tree)
         print(f"Ore needed for 1 fuel: {oreNeeded}") 
 
+    def Iterate(self,rawData,target,source):
+        self.ProcessRawInput(rawData)
+        self._tree = Tree(self._productBank)
+        self._tree.SetRoot(self.InsertIntoTree(self._tree,target,None))
+        
+        def NodeVisitorFunc(node):
+            NodeVisitorFunc.productionBank = self._productBank
+            nodeName = node.GetName()
+            if (nodeName not in NodeVisitorFunc.productionBank.keys()):
+                NodeVisitorFunc.productionBank[nodeName] = (0,0,0)
+
+        self._tree._nodeVisitedFunc = NodeVisitorFunc
+
+        #self._tree.PrintTree(200, [self._tree._root])
+        self.TraverseOnce(self._tree._root)
+
+        onHandOre = 10**12
+        self._productBank['ORE'] = (onHandOre,0,0)
+        try:
+            fuel = 0
+            while(onHandOre >= 0):
+                self._tree._root.Produce()
+                fuel = fuel + 1
+                onHandOre, discard1, discard2 = self._productBank['ORE']
+                if (fuel % 5 ==0):
+                    print(f"Fuel produced {fuel}, ore left {onHandOre}")     
+        except AssertionError:
+            print("Assertion!")
+        
+        print(f"Total fuel produced {fuel}")
+        print(self._productBank)
+        print("Done.")
+
     def TraverseOnce(self,node):
         node.Visit()
         if (len(node._branches)==0):
@@ -58,6 +91,8 @@ class Day14Driver:
     def CalculateOre(self,tree):
         tree._root.Produce()
         (onHand,totalProduced,demand) = self._productBank['ORE']
+        for k in self._productBank:
+            print(f"After one run, total on hand of {k}: {self._productBank[k][0]}")
         return totalProduced
 
     def InsertIntoTree(self,tree,nodeName,sentTowardRoot):
@@ -92,17 +127,19 @@ class Day14Driver:
 
         return node
 
+#d = Day14Driver()
+#d.Run(Day14DataFixture.test1,'FUEL','ORE')  # should produce 1 FUEL with 31 ORE
+#d = Day14Driver()
+#d.Run(Day14DataFixture.test2,'FUEL','ORE')  # 165 ORE
+#d = Day14Driver()
+#d.Run(Day14DataFixture.test3,'FUEL','ORE')  # 13312 ORE
+#d = Day14Driver()
+#d.Run(Day14DataFixture.test4,'FUEL','ORE')  # 180697 ORE
+#d = Day14Driver()
+#d.Run(Day14DataFixture.test5,'FUEL','ORE')  # 2210736 ORE
+#d = Day14Driver()
+#d.Run(Day14DataFixture.mainDay14_1,'FUEL','ORE')  # 504284 ORE
 d = Day14Driver()
-d.Run(Day14DataFixture.test1,'FUEL','ORE')  # should produce 1 FUEL with 31 ORE
-d = Day14Driver()
-d.Run(Day14DataFixture.test2,'FUEL','ORE')  # 165 ORE
-d = Day14Driver()
-d.Run(Day14DataFixture.test3,'FUEL','ORE')  # 13312 ORE
-d = Day14Driver()
-d.Run(Day14DataFixture.test4,'FUEL','ORE')  # 180697 ORE
-d = Day14Driver()
-d.Run(Day14DataFixture.test5,'FUEL','ORE')  # 2210736 ORE
-d = Day14Driver()
-d.Run(Day14DataFixture.mainDay14_1,'FUEL','ORE')
+d.Iterate(Day14DataFixture.mainDay14_1,'FUEL','ORE') # 2690795 FUEL can be produced with 10**12 Ore
 
 
