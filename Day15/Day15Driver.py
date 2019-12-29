@@ -4,7 +4,7 @@ import pygame
 sys.path.append(os.path.abspath('../IntCodeComputer'))
 from Computer import Computer as Computer
 from DataFixture import DataFixture as DataFixture
-from Game import Game as Game
+from Game import *
 
 class Day15Driver:
 

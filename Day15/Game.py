@@ -1,6 +1,15 @@
 import pygame
 from pygame import surfarray
 import numpy as np
+from enum import Enum     # for enum34, or the stdlib version
+
+class BT(Enum): # from aenum import Enum  # for the aenum version
+    Empty = 0
+    Wall = 1
+    Block = 2
+    Paddle = 3
+    Ball = 4
+    GreenEmpty = 5
 
 class Game:
 
@@ -9,31 +18,31 @@ class Game:
     scalingFactor = blockSize//inputBlockSize
 
     table = {
-        '0': np.array([
-                    [0,0,0,0],
-                    [0,0,0,0],
-                    [0,0,0,0],
-                    [0,0,0,0]]), #empty
-        '1': np.array([
-                    [1,1,1,1],
-                    [1,1,1,1],
-                    [1,1,1,1],
-                    [1,1,1,1]]), #wall
-        '2': np.array([
-                    [0,1,0,1],
-                    [1,0,1,0],
-                    [0,1,0,1],
-                    [1,0,1,0]]), #block
-        '3': np.array([
-                    [0,1,1,0],
-                    [0,1,1,0],
-                    [0,1,1,0],
-                    [0,1,1,0]]), # horizontal paddle
-        '4': np.array([
-                    [0,0,0,0],
-                    [0,1,1,0],
-                    [0,1,1,0],
-                    [0,0,0,0]]) # ball
+        BT.Empty:       np.array([
+                            [0,0,0,0],
+                            [0,0,0,0],
+                            [0,0,0,0],
+                            [0,0,0,0]]), #empty
+        BT.Wall:        np.array([
+                            [1,1,1,1],
+                            [1,1,1,1],
+                            [1,1,1,1],
+                            [1,1,1,1]]), #wall
+        BT.Block:       np.array([
+                            [0,1,0,1],
+                            [1,0,1,0],
+                            [0,1,0,1],
+                            [1,0,1,0]]), #block
+        BT.Paddle:      np.array([
+                            [0,1,1,0],
+                            [0,1,1,0],
+                            [0,1,1,0],
+                            [0,1,1,0]]), # horizontal paddle
+        BT.Ball:        np.array([
+                            [0,0,0,0],
+                            [0,1,1,0],
+                            [0,1,1,0],
+                            [0,0,0,0]]) # ball
     }
 
     def SetDirection(self,val):
@@ -62,7 +71,11 @@ class Game:
                             y*Game.scalingFactor:y*Game.scalingFactor+Game.scalingFactor,
                             x*Game.scalingFactor:x*Game.scalingFactor+Game.scalingFactor
                         ] = 0XFFFFFF
-            Game.table[k] = a
+            Game.table[BT(k)] = a
+        if (BT.GreenEmpty not in Game.table.keys()):
+            block = Game.table[BT.Empty].copy()
+            block.fill(0x00FF00)
+            Game.table[BT.GreenEmpty] = block
 
         pygame.init()         
         self._surface = pygame.display.set_mode((self._screenWidth, self._screenHeight))
@@ -72,7 +85,7 @@ class Game:
     
     def LoadScreenData(self, data):
         for (pos,blockType) in data:
-            self.SetBlockToScreen(pos,blockType)
+            self.SetBlockToScreen(pos,BT(blockType))
             self._screen[pos] = blockType
 
     def SaveScreenData(self):
@@ -127,11 +140,7 @@ class Game:
 
     def ChangeColorOfBlock(self, pos):
 
-        if ("5" not in Game.table.keys()):
-            block = Game.table["0"].copy()
-            block.fill(0x00FF00)
-            Game.table["5"] = block
-        self.SetBlockToScreen(pos,5)
+        self.SetBlockToScreen(pos,BT.GreenEmpty)
         pygame.display.update()
 
         for event in pygame.event.get(): 
@@ -157,25 +166,21 @@ class Game:
 
 
         if (result == -1):
-            blockType = 3
-            self.SetBlockToScreen(self._robot,blockType)
+            self.SetBlockToScreen(self._robot,BT.Paddle)
         if (result == 0):
-            blockType = 1
-            self.SetBlockToScreen((y,x),blockType)
+            self.SetBlockToScreen((y,x),BT.Wall)
         if (result == 1):
             if (self._origin == self._robot):
-                blockType = 3
+                blockType = BT.Paddle
             else:
-                blockType = 0
+                blockType = BT.Empty
             self.SetBlockToScreen(self._robot,blockType)
-            blockType = 4
+            blockType = BT.Ball
             self.SetBlockToScreen((y,x),blockType)
             self._robot = (y,x)
         if (result == 2):
-            blockType = 0
-            self.SetBlockToScreen(self._robot,blockType)
-            blockType = 2
-            self.SetBlockToScreen((y,x),blockType)
+            self.SetBlockToScreen(self._robot,BT.Empty)
+            self.SetBlockToScreen((y,x),BT.Block)
             self._robot = (y,x)
 
         surfarray.blit_array(self._surface, self._pixels)
@@ -183,12 +188,12 @@ class Game:
 
     def SetBlockToScreen(self, pos, blockType):
 
-        if (blockType != 4 and (pos not in self._screen.keys())):
+        if (blockType != BT.Ball and (pos not in self._screen.keys())):
             self._screen[pos] = blockType
-        if (blockType == 4 and (pos not in self._screen.keys())):
-            self._screen[pos] = 0
+        if (blockType == BT.Ball and (pos not in self._screen.keys())):
+            self._screen[pos] = BT.Empty
 
-        block = Game.table[str(blockType)]
+        block = Game.table[blockType]
         blockYLength = block.shape[0]
         blockXLength = block.shape[1]
         screenStartY = pos[0] 
