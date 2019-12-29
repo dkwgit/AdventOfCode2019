@@ -45,11 +45,11 @@ class Day16Driver:
         print(f"Day 16 part 2 result: {FFT.ConvertListToString(result[0:8])}")
 
 d = Day16Driver()
-#test1Data = df.test1.copy()
-#d.TestMultiplePhases(df.basePattern,test1Data[0],test1Data[1:])
-#for phase,message,expectedResult in [df.test2,df.test3,df.test4]:
-#    d.TestPhaseNumber(phase,df.basePattern,message,expectedResult)
-#d.Day16Part1(100,df.basePattern,df.mainDay16)  #67481260
-#for phase,message,expectedResult in [df.test5]:#,df.test6,df.test7]:
-  #d.TestPhaseNumberWithOffset(phase,df.basePattern,message,expectedResult)
-d.Day16Part2(100,df.basePattern,df.mainDay16)
+test1Data = df.test1.copy()
+d.TestMultiplePhases(df.basePattern,test1Data[0],test1Data[1:])
+for phase,message,expectedResult in [df.test2,df.test3,df.test4]:
+    d.TestPhaseNumber(phase,df.basePattern,message,expectedResult)
+d.Day16Part1(100,df.basePattern,df.mainDay16)  #67481260
+for phase,message,expectedResult in [df.test5,df.test6,df.test7]:
+    d.TestPhaseNumberWithOffset(phase,df.basePattern,message,expectedResult)
+#d.Day16Part2(100,df.basePattern,df.mainDay16) #42178738
