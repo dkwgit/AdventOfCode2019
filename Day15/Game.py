@@ -1,9 +1,9 @@
 import pygame
 from pygame import surfarray
 import numpy as np
-from enum import Enum     # for enum34, or the stdlib version
+from enum import Enum
 
-class BT(Enum): # from aenum import Enum  # for the aenum version
+class BT(Enum): 
     Empty = 0
     Wall = 1
     Block = 2

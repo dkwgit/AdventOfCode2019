@@ -28,9 +28,7 @@ class Computer:
 
     def LoadProgram(self, programData):
         self._programData = programData.copy()
-        moreMemory = []
-        for idx in range(0,1024):
-            moreMemory.append(0)
+        moreMemory = [0] * 1024*10
         self._programData.extend(moreMemory)
         self._programIndex = 0
         self._programLine = 0
