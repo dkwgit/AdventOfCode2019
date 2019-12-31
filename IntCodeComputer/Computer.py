@@ -26,8 +26,12 @@ class Computer:
             99: lambda computer, programlocation :   Halt(computer,programlocation, 1, False, False)
         }
 
+    def GetOriginalProgram(self):
+        return self._originalProgramData
+        
     def LoadProgram(self, programData):
         self._programData = programData.copy()
+        self._originalProgramData = self._programData.copy()
         moreMemory = [0] * 1024*10
         self._programData.extend(moreMemory)
         self._programIndex = 0

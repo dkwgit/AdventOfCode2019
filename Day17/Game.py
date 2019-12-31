@@ -5,6 +5,10 @@ from enum import Enum
 from TextScreen import TextScreen
 import itertools
 import random
+import sys
+import os
+sys.path.append(os.path.abspath('../IntCodeComputer'))
+from Computer import Computer as Computer
 
 class BT(Enum): 
     Empty = 0
@@ -219,7 +223,7 @@ class Game:
         self.SetBlockTypeToScreen(pos, newBlockType)
 
     def ChangeColorOfBlock(self, pos, color):
-        block = Game.table[self._screen[pos]]
+        block = Game.table[self._screen[pos]].copy()
         for y in range(0,Game.blockSize):
             for x in range(0,Game.blockSize):
                 if block[y][x] != 0:
@@ -241,7 +245,6 @@ class Game:
         elif (self._direction == 4):
             y = self._robot[0]
             x = self._robot[1] + Game.blockSize
-
 
         if (result == -1):
             #changesd to view blocks on day 17
@@ -408,7 +411,7 @@ class Game:
                             newColor = colors.pop(random.randint(0,len(colors)-1))
                             workers[newColor] = (1,t,newColor)
                             
-                pygame.time.delay(100)  # helps follow the visualization
+                pygame.time.delay(50)  # helps follow the visualization
 
         #pick a random color to start with.  The random color picking minimizes likelihood of adjacent colors looking alike,
         #making the visualization easier to track with
@@ -448,6 +451,15 @@ class Game:
                     self.UpdateDisplay(-1)
                 elif (event.key == pygame.K_f): #f does the fill with oxygen on the Day 15 maze
                     self.FillWithOxygen()
+                elif (event.key == pygame.K_j): #j searches for junctions for calibration for Day 17-1
+                    #do the visualized search for junctions
+                    self.SearchForJunctions()
+                elif (event.key == pygame.K_r): #r reloads the scaffold, by starting the computer over.  You still have to follow up with a space to run it
+                    self._started = False
+                    computer = Computer()
+                    computer.LoadProgram(self._computer.GetOriginalProgram())
+                    self._computer = computer
+                    self._textScreen = TextScreen() #start over with a new text screen
                 elif (event.key == pygame.K_SPACE): #starts the current Computer program (displays the scaffold, etc.)
                     self._started = True if self._started == False else False
             
@@ -475,7 +487,5 @@ class Game:
                     
                     #after we are done accumulating results onto the text screen, draw it to the game screen
                     self.DrawTextScreenToGameScreen()
-                    #do the visualized search for junctions
-                    self.SearchForJunctions()
             
             
