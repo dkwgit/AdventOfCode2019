@@ -30,6 +30,13 @@ class Game:
     inputBlockSize = 5  #I coded some of the blocks in 5x5, which have to be exploded to blocksize
     scalingFactor = blockSize//inputBlockSize
 
+    rightTurns = { BT.Up: BT.Right, BT.Right: BT.Down, BT.Down: BT.Left, BT.Left: BT.Up } 
+    leftTurns =  { BT.Up: BT.Left, BT.Left: BT.Down, BT.Down: BT.Right, BT.Right: BT.Up }
+
+    textScreenToGameScreen = { ".": BT.Empty, "#": BT.Wall, "^": BT.Up, ">": BT.Right, "<": BT.Left, "v": BT.Down, "X": BT.BadRobot, "O": BT.Junction }
+
+    directionsForBlockType = { BT.Up: (-1,0), BT.Down: (1,0), BT.Left: (0,-1), BT.Right: (0,1) }
+
     table = {
         BT.Empty:       np.array([
                             [0,0,0,0,0],
@@ -116,6 +123,8 @@ class Game:
         self._pixels = None
         self._direction = 0
         self._textScreen = TextScreen()
+        self._textScreenDraw = 0
+
         for k in Game.table.keys():
             if (k in [BT.Up,BT.Down,BT.Left,BT.Right,BT.Ball]):
                 r,g,b,a = pygame.colordict.THECOLORS.get('yellow2')
@@ -220,7 +229,9 @@ class Game:
         Fill(self,fillFrom,0)
 
     def ChangeBlockType(self, pos, newBlockType, batchMode = False):
+        currentBlock = None if pos not in self._screen.keys() else self._screen[pos]
         self.SetBlockTypeToScreen(pos, newBlockType, batchMode = False)
+        return currentBlock
 
     def ChangeColorOfBlock(self, pos, color, batchMode = False):
         block = Game.table[self._screen[pos]].copy()
@@ -288,6 +299,8 @@ class Game:
         self.ProcessGameEvents()
 
     def SetBlockTypeToScreen(self, pos, blockType, batchMode = False):
+        #if (pos in self._screen.keys() and self._screen[pos]==blockType):
+        #    return
         self._screen[pos] = blockType
         block = Game.table[blockType]
         self.SetBlockToScreen(pos, block, batchMode)
@@ -311,21 +324,9 @@ class Game:
             line = list(self._textScreen._lines[y])
             for x in range(0,maxX):
                 ch = line[x]
-                blockType = None
-                if (ch == "."):
+                blockType = Game.textScreenToGameScreen[ch]
+                if (blockType == BT.Empty):
                     continue
-                if (ch == "#"):
-                    blockType = BT.Wall
-                if (ch == "^"):
-                    blockType = BT.Up
-                if (ch == ">"):
-                    blockType = BT.Right
-                if (ch == "<"):
-                    blockType = BT.Left
-                if (ch == "v"):
-                    blockType = BT.Down
-                if (ch == "X"):
-                    blockType = BT.BadRobot
                 self.SetBlockTypeToScreen((y*Game.blockSize,x*Game.blockSize),blockType,True)
         self.BlitAndSendToWindow()
 
@@ -444,11 +445,21 @@ class Game:
             self.ChangeBlockType(j, BT.Junction) #show the found junctions
             junctionsOnTextScreen.append(self.TranslateToTextScreen(j))
 
+        for yText,xText in junctionsOnTextScreen:
+            oldItem = self._textScreen.SetPoint(yText,xText,"O")
+            assert(oldItem == "#")
+
         calibration = sum(map(lambda pos: pos[0]*pos[1],junctionsOnTextScreen))
         print(f"Calibration number, the answer for Day17-1: {calibration}")  #6680
 
     def ResetWallsWhite(self):
         discard = [ self.ChangeColorOfBlock(k, 0xFFFFFF,True) for k,v in self.GetBlocksOfType([BT.Wall]).items() ]
+        self.BlitAndSendToWindow()
+
+    def MakeScreenEmpty(self):
+        for key in self._screen.copy().keys():
+            self.ChangeColorOfBlock(key,0x000000,True)
+            del self._screen[key]
         self.BlitAndSendToWindow()
 
     def WalkScaffold(self):
@@ -463,15 +474,7 @@ class Game:
 
         def GetNextInDirectionByBlockType(blockType):
             assert(blockType in [BT.Up,BT.Down,BT.Left,BT.Right])
-            nextStep = None
-            if (blockType == BT.Up):
-                nextStep = (-1,0)
-            if (blockType == BT.Down):
-                nextStep = (1,0)
-            if (blockType == BT.Left):
-                nextStep = (0,-1)
-            if (blockType == BT.Right):
-                nextStep = (0,1)
+            nextStep = Game.directionsForBlockType[blockType]
             return (nextStep,blockType)
 
         def TakeStep(robotPos, blockType, moveString):
@@ -497,19 +500,19 @@ class Game:
                 if (sy < y):
                     turnBlockType = BT.Up
                     assert(blockType != BT.Down)
-                    moveString = "R" if blockType == BT.Left else "L"
+                    moveString = "R," if blockType == BT.Left else "L,"
                 if (sy > y):
                     turnBlockType = BT.Down
                     assert(blockType != BT.Up)
-                    moveString = "L" if blockType == BT.Left else "R"
+                    moveString = "L," if blockType == BT.Left else "R,"
                 if (sx < x):
                     turnBlockType = BT.Left
                     assert(blockType != BT.Right)
-                    moveString = "L" if blockType == BT.Up else "R"
+                    moveString = "L," if blockType == BT.Up else "R,"
                 if (sx > x):
                     turnBlockType = BT.Right
                     assert(blockType != BT.Left)
-                    moveString = "R" if blockType == BT.Up else "L"
+                    moveString = "R," if blockType == BT.Up else "L,"
                 assert(turnBlockType is not None)
                 assert(moveString != "")
                 nextBlockType = turnBlockType
@@ -547,11 +550,16 @@ class Game:
         def ConsolidateJourneyList(returnValues):
             outputList = []
             currentLetter = returnValues[0][2][0]
+            currentNumber = int(returnValues[0][2][2:])
             currentItemInDirection = returnValues[0][2]
             for discard1,discard2,moveString in returnValues:
-                if (moveString[0] != currentLetter):
+                newLetter = moveString[0]
+                newNumber = int(moveString[2:])
+                assert(newNumber != None)
+                if (newLetter != currentLetter or newNumber < currentNumber):
                     outputList.append(currentItemInDirection)
-                    currentLetter = moveString[0]
+                currentLetter = newLetter
+                currentNumber = newNumber
                 currentItemInDirection = moveString
             outputList.append(currentItemInDirection)
             return outputList
@@ -559,25 +567,115 @@ class Game:
         journeyList = ConsolidateJourneyList(returnValues)
         journeyString = ",".join(journeyList)
 
-
-
         #Writing out the journeystring on paper, 'L8,R10,L8,R8,L12,R8,L8,R10,L8,R8,L8,R10,L8,R10,L8,R10,L8,R8,L12,R8,L8,R10,L12,R8,L12,R8'
-        #yieled the following sub-patterns
-        A = "L8,R10,L8,R8"
-        B = "L12,R8"
-        C = "L8,R10"
-        ALL = "{},{},{},{},{},{},{},{},{},{}".format(A,B,A,C,C,A,B,C,B,B)
-
-        assert(journeyString==ALL)
-
-
+        #yieled the following sub-patterns,which when combined in ALL, equal the journeystring.
+        A = "L,8,R,10,L,8,R,8"
+        B = "L,12,R,8,R,8"
+        C = "L,8,R,6,R,6,R,10,L,8"
+        ALL = "A,B,A,C,C,A,B,C,B,B"
+        ALLCheck = "{},{},{},{},{},{},{},{},{},{}".format(A,B,A,C,C,A,B,C,B,B)
+        assert(journeyString==ALLCheck)
 
         print(f"Scaffold has been walked")
 
+        def WalkAll(steps):
+            robotPos,robotBlock = self.FindRobotBlock()
+            wallsAndJunctions = { k:v for k,v in self._screen.items() if v == BT.Wall or v == BT.Junction }
+
+            def TurnRobot(turn,robotBlock):
+                assert(robotBlock in [BT.Up,BT.Down,BT.Left,BT.Right])
+                assert(turn == "R" or turn == "L")
+                turnDict = Game.leftTurns if turn == "L" else Game.rightTurns
+                return turnDict[robotBlock]
+            priorBlockType = BT.Wall
+            for turn,distance in steps:
+                print(f"Doing step {turn},{distance}")
+                robotBlock = TurnRobot(turn,robotBlock)
+                self.ChangeBlockType(robotPos, robotBlock)
+                pygame.time.delay(10)   
+                for d in range(0,int(distance)):
+                    self.ChangeBlockType(robotPos, priorBlockType)
+                    pygame.time.delay(10)
+                    robotY, robotX = robotPos
+                    directionY, directionX = Game.directionsForBlockType[robotBlock]
+                    robotPos = (robotY + directionY * Game.blockSize, robotX + directionX * Game.blockSize)
+                    if (robotPos not in wallsAndJunctions.keys()):
+                        robotBlock = BT.BadRobot
+                    priorBlockType = self.ChangeBlockType(robotPos, robotBlock)
+                    pygame.time.delay(10)
+            return
+
+        #Check the result, by walking it
+        self.MakeScreenEmpty()
+        self.DrawTextScreenToGameScreen()
+        steps = ALLCheck.split(',')
+        val = iter(steps)
+        stepsAsTuples = [ (turn,move) for turn,move in zip(val,val) ]
+        WalkAll(stepsAsTuples)
+
     def TranslateToTextScreen(self,pos):
         y,x = pos
-        return (y//Game.blockSize,x//Game.blockSize)
+        yText = y // Game.blockSize
+        xText = x // Game.blockSize
+        return (yText,xText)
 
+    def RestartComputer(self):
+        computer = Computer()
+        computer.LoadProgram(self._computer.GetOriginalProgram())
+        self._computer = computer
+
+
+    def DoFinalRobotRun(self):
+        A = "L,8,R,10,L,8,R,8"
+        B = "L,12,R,8,R,8"
+        C = "L,8,R,6,R,6,R,10,L,8"
+        ALL = "A,B,A,C,C,A,B,C,B,B"
+
+        self._computer._programData[0]=2
+
+        input = [
+            ALL,
+            A,
+            B,
+            C,
+            'n'
+        ]
+
+        def TranslateToAscii(inputList):
+            outputInAscii = []
+            for i in input:
+                asList = list(i)
+                for x in asList:
+                    outputInAscii.append(ord(x))
+                outputInAscii.append(10)
+            return outputInAscii
+
+        inputForComputer = TranslateToAscii(input)
+        intputForComputerCopy = inputForComputer.copy()
+
+        self.GetTextScreenFromComputerAndDraw()
+
+        self._computer.SetInput(inputForComputer)
+        outputLines = []
+
+
+        for ioCycles in range(0,5):
+            line = self._computer.GetLine()
+            outputLines.append(line)
+            self._computer.SendLine()
+
+        line = self._computer.GetLine()
+        assert(len(line)==0)
+        while(True):
+            self.GetTextScreenFromComputerAndDraw()
+        oneResult, continueRun, inputNext = self._computer.RunToNextIO()
+        oneResult, continueRun, inputNext = self._computer.RunToNextIO()
+        assert(inputNext == False)
+        assert(oneResult is not None)
+        print(f"Space dust collected {oneResult}")
+
+        nextOpCode = self._computer.PeekAtOpCodeValue()
+        
     def ProcessGameEvents(self):
         for event in pygame.event.get(): 
             if event.type == pygame.KEYUP:
@@ -598,12 +696,10 @@ class Game:
                     pygame.mouse.set_cursor(*pygame.cursors.broken_x)
                     self.SearchForJunctions()
                     pygame.mouse.set_cursor(*pygame.cursors.arrow)
-                elif (event.key == pygame.K_r): #r reloads the scaffold, by starting the computer over.  You still have to follow up with a space to run it
-                    self._started = False
-                    computer = Computer()
-                    computer.LoadProgram(self._computer.GetOriginalProgram())
-                    self._computer = computer
-                    self._textScreen = TextScreen() #start over with a new text screen
+                elif (event.key == pygame.K_r): #r restarts the computer.
+                    pygame.mouse.set_cursor(*pygame.cursors.broken_x)
+                    self.DoFinalRobotRun()
+                    pygame.mouse.set_cursor(*pygame.cursors.arrow)
                 elif (event.key == pygame.K_u):  #self.UpdateDisplay was left over from Day 15.  I rigged 'u' to it to see some new blocks
                     self.UpdateDisplay(-1)
                 elif (event.key == pygame.K_w):
@@ -611,12 +707,26 @@ class Game:
                     self.WalkScaffold()
                     pygame.mouse.set_cursor(*pygame.cursors.arrow)
                 elif (event.key == pygame.K_SPACE): #starts the current Computer program (displays the scaffold, etc.)
+                    oldValue = self._started
+                    if (oldValue == False):
+                         pygame.mouse.set_cursor(*pygame.cursors.broken_x) #about to run the computer, so display a different mouse cursor
                     self._started = True if self._started == False else False
-                    pygame.mouse.set_cursor(*pygame.cursors.broken_x)
+                   
             
             if event.type == pygame.QUIT: 
                 pygame.quit() 
                 quit() 
+
+    def GetTextScreenFromComputerAndDraw(self):
+        self._textScreenDraw = self._textScreenDraw + 1
+        self._textScreen._lines = []
+        while (True):
+            line = self._computer.GetLine()
+            if (len(line.strip())==0):
+                break
+            self._textScreen.AddLine(line)
+        if (self._textScreenDraw % 10 == 0):
+            self.DrawTextScreenToGameScreen()
 
     def MainLoop(self):
         while(True):
@@ -626,18 +736,9 @@ class Game:
   
             if (self._started):
                 # Run the computer code up to next output result, accumulating results in the text screen
-                result = None
-                (result,continueRun,inputNext) = self._computer.RunToNextIO()
-                if (result is not None):
-                    self._textScreen.AddToLine(result)
-
-                nextOpCode = self._computer.PeekAtOpCodeValue()
-                if (nextOpCode == 99):
-                    self._started = False
-                    self._computer.DoNext()
-                    
-                    #after we are done accumulating results onto the text screen, draw it to the game screen
-                    self.DrawTextScreenToGameScreen()
-                    pygame.mouse.set_cursor(*pygame.cursors.arrow)
+                self._started = False
+                self.GetTextScreenFromComputerAndDraw()
+                
+                pygame.mouse.set_cursor(*pygame.cursors.arrow)
             
             

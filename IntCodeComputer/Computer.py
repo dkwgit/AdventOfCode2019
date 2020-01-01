@@ -107,6 +107,38 @@ class Computer:
                 break
         return (result,continueRun,inputNext)
 
+    def GetLine(self):
+        continueRun = True
+        inputNext = False
+        output = []
+        oneResult = 0
+        while (continueRun and inputNext == False and oneResult != 10):
+             oneResult, continueRun, inputNext = self.RunToNextIO()
+             assert(inputNext == False)
+             assert(continueRun == True)
+             print(oneResult)
+             output.append(oneResult)
+        if (output[-1] == 10):
+            output.pop()  #chop trailing newline
+        #Rewrite in ascii
+        output = "".join(list(map(lambda x: chr(x), output)))
+        return output
+             
+    def SendLine(self):
+        continueRun = True
+        oneResult = None
+        characterAboutToSend = 0
+        while (continueRun and characterAboutToSend != 10):
+             oneResult, continueRun, inputNext = self.RunToNextIO()
+             assert(inputNext == True)
+             assert(oneResult is None)
+             characterAboutToSend = self._input[0]
+             assert(self.PeekAtOpCodeValue() == 3)
+             oneResult, continueRun, inputNext = self.DoNext()
+        
+
+
+
     def DoNext(self):
         assert(self._halted is None or self._halted == False)
         self._halted = False
@@ -126,7 +158,7 @@ class Computer:
 
         inputNext = False
         opCodeValue = self.PeekAtOpCodeValue()
-        if (opCodeValue == 3 and self._input == None):
+        if (opCodeValue == 3):
             inputNext = True
 
         return (returnValue, continueRun, inputNext)
