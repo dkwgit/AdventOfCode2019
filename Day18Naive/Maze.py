@@ -22,34 +22,19 @@ class Maze:
         self._highDoor = ord('Z')
         self._lowKey = ord('a')
         self._highKey = ord('z')
-
-    def GetKeyDoorDict(self):
-        doorsExist = {}
-        doors = {}
-        unique = np.unique(self._data)
-        for u in unique:
-            if self._lowDoor <= u <= self._highDoor:
-                doorsExist[u] = 1
-            if self._lowKey <= u <= self._highKey:
-                if ((u-32) in doorsExist.keys()):
-                    doors[u-32] = KeyStates.keyWithDoorNotYetFound
-                else:
-                    doors[u-32] = KeyStates.keyWithoutDoorNetYetFound
-        return doors
-
-    def CheckForNewKey(self, val, doors):
-        if (not (self._lowKey <= val <= self._highKey)):
-            return False
-        if (doors[val-32] == KeyStates.keyWithDoorNotYetFound or doors[val-32] == KeyStates.keyWithoutDoorNetYetFound):
-            doors[val-32]=KeyStates.keyFound
-            return True
-        return False
+        self._doors = {}
+        self._keys = {}
 
     def AddPoint(self, pos, ch):
         y,x = pos
-        self._data[y][x] = ord(ch)
+        asciiCode = ord(ch)
+        self._data[y][x] = asciiCode
         if (ch == '@'):
             self._entrance = pos
+        if (self._lowKey <= asciiCode <= self._highKey):
+            self._keys[pos] = asciiCode
+        if (self._lowDoor <= asciiCode <= self._highDoor):
+            self._doors[pos] = asciiCode
 
     def GetAdjacents(self, pos):
         if (pos not in self._adjacentsCache.keys()):
@@ -74,10 +59,10 @@ class Maze:
             self._adjacentsCache[pos] = adjacents
         return self._adjacentsCache[pos]
 
-    def GetPossibleMoves(self, pos, doors, lastPathTaken):
+    def GetPossibleMoves(self, pos, keys, lastPathTaken):
         adjacents = self.GetAdjacents(pos)
         
-        closedDoors = { adjPos:val for adjPos,val in adjacents if self._lowDoor <= val <= self._highDoor and doors[val] != KeyStates.keyFound}
+        closedDoors = { adjPos:val for adjPos,val in adjacents if adjPos in self._doors.keys() and (val+32) not in keys.keys()}
         
         filteredAdjacents = [(adjPos,val) for adjPos,val in adjacents if adjPos not in closedDoors.keys() and adjPos not in lastPathTaken.keys()]
         return filteredAdjacents        
