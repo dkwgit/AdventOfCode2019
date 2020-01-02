@@ -24,6 +24,9 @@ class Maze:
         self._highKey = ord('z')
         self._doors = {}
         self._keys = {}
+    
+    def Lookup(self,y,x):
+        return self._data[y][x]
 
     def AddPoint(self, pos, ch):
         y,x = pos

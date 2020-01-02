@@ -8,7 +8,7 @@ class World:
         self._pos = pos
         y,x = pos
         self._maze = maze
-        self._val = self._maze._data[y][x]
+        self._val = self._maze.Lookup(y,x)
         self._keys = {} if keys is None else keys.copy()
         self._totalPath = totalPath
         self._lastPathTaken = lastPathTaken.copy()
@@ -18,7 +18,7 @@ class World:
     def EvaluateWorld(self):
         if (self._universe._longestKeyString - len(self._keyOrder) > 1):
             return None
-        self._totalPath = "".join([self._totalPath,"_",str(self._pos)])
+        self._totalPath += ("_" + str(self._pos[0]) + "/" + str(self._pos[1]))
         if (self._maze._lowKey <= self._val <= self._maze._highKey):
             if (self._val not in self._keys.keys()):
                 self._keys[self._val] = 1
