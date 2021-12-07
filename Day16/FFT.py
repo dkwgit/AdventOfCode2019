@@ -36,7 +36,7 @@ class FFT:
 
     def GetTransformArray(self,index):
         offset = self._offset
-        transformArray = np.copy(self._messageLengthZeroArrayTemplate, np.int16)
+        transformArray = np.copy(self._messageLengthZeroArrayTemplate) #, np.int16)
         baseMultiplied = itertools.chain(itertools.chain.from_iterable(itertools.repeat(x, index+offset+1) for x in self._basePattern[1:]), itertools.cycle(itertools.chain.from_iterable(itertools.repeat(x, index+offset+1) for x in self._basePattern)))
         for b in range(index, self._lenMessage):
             transformArray[b] = next(baseMultiplied) 
@@ -44,7 +44,7 @@ class FFT:
 
     def DoPhase(self):
         print(f"On phase {self._phaseCounter + 1}")
-        newMessage = np.copy(self._messageLengthZeroArrayTemplate, np.int16)
+        newMessage = np.copy(self._messageLengthZeroArrayTemplate) #, np.int16)
         
         
         def DoPhaseWhenAllOnes(s):

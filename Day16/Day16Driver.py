@@ -52,4 +52,4 @@ for phase,message,expectedResult in [df.test2,df.test3,df.test4]:
 d.Day16Part1(100,df.basePattern,df.mainDay16)  #67481260
 for phase,message,expectedResult in [df.test5,df.test6,df.test7]:
     d.TestPhaseNumberWithOffset(phase,df.basePattern,message,expectedResult)
-#d.Day16Part2(100,df.basePattern,df.mainDay16) #42178738
+d.Day16Part2(100,df.basePattern,df.mainDay16) #42178738
